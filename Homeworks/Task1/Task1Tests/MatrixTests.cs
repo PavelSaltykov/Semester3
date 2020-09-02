@@ -20,10 +20,10 @@ namespace Task1.Tests
         [Test]
         public void EqualsTest()
         {
-            var array1 = new int[,] { { 1 } };
+            var array1 = new int[1, 1] { { 1 } };
             var matrix1 = new Matrix(array1);
 
-            var array2 = new int[,] { { 1 }, { 2 } };
+            var array2 = new int[2, 1] { { 1 }, { 2 } };
             var matrix2 = new Matrix(array2);
 
             Assert.IsFalse(matrix1.Equals(matrix2));

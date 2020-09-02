@@ -5,13 +5,29 @@ using System.Linq;
 
 namespace Task1
 {
+    /// <summary>
+    /// Represents a rectangular table of integer elements.
+    /// </summary>
     public class Matrix
     {
         private readonly int[,] elements;
+
+        /// <summary>
+        /// Returns the number of rows and columns.
+        /// </summary>
         public (int rows, int columns) Size => (elements.GetLength(0), elements.GetLength(1));
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Matrix"/> class.
+        /// </summary>
+        /// <param name="elements">Two-dimensional array of integer elements.</param>
         public Matrix(int[,] elements) => this.elements = (int[,])elements.Clone();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Matrix"/> class.
+        /// </summary>
+        /// <param name="filename">Name of the file containing a matrix.</param>
+        /// <exception cref="InvalidMatrixFileException">Thrown when the file contains an invalid matrix.</exception>
         public Matrix(string filename) : this(MatrixFromFile(filename))
         {
         }
@@ -50,6 +66,12 @@ namespace Task1
             return array;
         }
 
+        /// <summary>
+        /// Gets or sets the element at the specified position.
+        /// </summary>
+        /// <param name="row">The zero-based row number.</param>
+        /// <param name="column">The zero-based column number.</param>
+        /// <returns>The element at the specified position.</returns>
         public int this[int row, int column]
         {
             get => elements[row, column];
@@ -78,6 +100,10 @@ namespace Task1
 
         public override int GetHashCode() => elements.GetHashCode();
 
+        /// <summary>
+        /// Writes the matrix to the specified file.
+        /// </summary>
+        /// <param name="filename">Name of the file to write.</param>
         public void WriteToFile(string filename)
         {
             using var streamWriter = new StreamWriter(filename, false);

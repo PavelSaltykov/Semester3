@@ -2,6 +2,10 @@
 
 namespace Task1
 {
+
+    /// <summary>
+    /// The exception that is thrown when the file contains an invalid matrix.
+    /// </summary>
     [Serializable]
     public class InvalidMatrixFileException : Exception
     {
