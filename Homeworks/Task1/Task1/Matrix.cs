@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Task1
 {
     public class Matrix
     {
-        public int[,] Elements { get; private set; }
-        public (int rows, int columns) Size => (Elements.GetLength(0), Elements.GetLength(1));
+        private readonly int[,] elements;
+        public (int rows, int columns) Size => (elements.GetLength(0), elements.GetLength(1));
 
-        public Matrix(int[,] elements) => Elements = elements;
+        public Matrix(int[,] elements) => this.elements = (int[,])elements.Clone();
 
         public Matrix(string filename) : this(MatrixFromFile(filename))
         {
@@ -16,65 +18,42 @@ namespace Task1
 
         private static int[,] MatrixFromFile(string filename)
         {
-            string firstLine;
             var matrix = new List<string>();
             using (var streamReader = new StreamReader(filename))
             {
-                firstLine = streamReader.ReadLine();
-                matrix.Add(streamReader.ReadToEnd());
+                while (!streamReader.EndOfStream)
+                {
+                    matrix.Add(streamReader.ReadLine());
+                }
             }
-
-            if (firstLine == null)
-                throw new InvalidMatrixFileException("Matrix size is not specified");
-
-            var numbers = firstLine.Split(' ');
-            if (numbers.Length != 2)
-                throw new InvalidMatrixFileException("Invalid matrix size");
-
-            var size = new int[2];
-            for (var i = 0; i < 2; ++i)
-            {
-                if (!int.TryParse(numbers[i], out size[i]))
-                    throw new InvalidMatrixFileException("Invalid matrix size");
-            }
-
-            return ConvertToArray(matrix, size[0], size[1]);
+            return ConvertToArray(matrix);
         }
 
-        private static int[,] ConvertToArray(List<string> matrix, int rows, int columns)
+        private static int[,] ConvertToArray(List<string> matrix)
         {
+            var rows = matrix.Count();
+            var columns = matrix[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Count();
             var array = new int[rows, columns];
-            if (matrix.Count != rows)
-                throw new InvalidMatrixFileException("Matrix size is not match");
 
             for (var i = 0; i < rows; ++i)
             {
-                var numbers = matrix[i].Split(' ');
+                var numbers = matrix[i].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (numbers.Length != columns)
-                    throw new InvalidMatrixFileException("Matrix size is not match");
+                    throw new InvalidMatrixFileException("Invalid matrix");
 
                 for (var j = 0; j < columns; ++j)
                 {
-                    if (!int.TryParse(numbers[i], out array[i, j]))
+                    if (!int.TryParse(numbers[j], out array[i, j]))
                         throw new InvalidMatrixFileException("Invalid matrix element");
                 }
             }
             return array;
         }
 
-        public void WriteToFile(string filename)
+        public int this[int row, int column]
         {
-            using var streamWriter = new StreamWriter(filename, false);
-            streamWriter.WriteLine($"{Size.rows} {Size.columns}");
-
-            for (var i = 0; i < Size.rows; ++i)
-            {
-                for (var j = 0; j < Size.columns; ++j)
-                {
-                    streamWriter.Write($"{Elements[i, j]} ");
-                }
-                streamWriter.WriteLine();
-            }
+            get => elements[row, column];
+            set => elements[row, column] = value;
         }
 
         public override bool Equals(object obj)
@@ -90,13 +69,26 @@ namespace Task1
             {
                 for (var j = 0; j < Size.columns; ++j)
                 {
-                    if (Elements[i, j] != otherMatrix.Elements[i, j])
+                    if (elements[i, j] != otherMatrix.elements[i, j])
                         return false;
                 }
             }
             return true;
         }
 
-        public override int GetHashCode() => Elements.GetHashCode();
+        public override int GetHashCode() => elements.GetHashCode();
+
+        public void WriteToFile(string filename)
+        {
+            using var streamWriter = new StreamWriter(filename, false);
+            for (var i = 0; i < Size.rows; ++i)
+            {
+                for (var j = 0; j < Size.columns; ++j)
+                {
+                    streamWriter.Write($"{elements[i, j]} ");
+                }
+                streamWriter.WriteLine();
+            }
+        }
     }
 }
