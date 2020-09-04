@@ -2,6 +2,10 @@
 
 namespace Task1
 {
+    /// <summary>
+    /// The exception that is thrown when the number of columns in the first matrix is not equal
+    /// to the number of rows in the second matrix.
+    /// </summary>
     [Serializable]
     public class MultiplicationException : Exception
     {
