@@ -2,8 +2,19 @@
 
 namespace Task1
 {
+    /// <summary>
+    /// Operations on matrices.
+    /// </summary>
     public static class MatrixOperations
     {
+        /// <summary>
+        /// Sequentially multiplies the rows of the first matrix by the columns of the second matrix.
+        /// </summary>
+        /// <param name="matrix1">The first matrix.</param>
+        /// <param name="matrix2">The second matrix.</param>
+        /// <returns>Result of the multiplication.</returns>
+        /// <exception cref="MultiplicationException">Thrown when the number of columns in the first matrix
+        /// is not equal to the number of rows in the second matrix.</exception>
         public static Matrix MultiplySequentially(Matrix matrix1, Matrix matrix2)
         {
             if (matrix1.Size.columns != matrix2.Size.rows)
@@ -24,6 +35,14 @@ namespace Task1
             return new Matrix(result);
         }
 
+        /// <summary>
+        /// Parallel multiplies the rows of the first matrix by the columns of the second matrix.
+        /// </summary>
+        /// <param name="matrix1">The first matrix.</param>
+        /// <param name="matrix2">The second matrix.</param>
+        /// <returns>Result of the multiplication.</returns>
+        /// <exception cref="MultiplicationException">Thrown when the number of columns in the first matrix
+        /// is not equal to the number of rows in the second matrix.</exception>
         public static Matrix MultiplyParallel(Matrix matrix1, Matrix matrix2)
         {
             if (matrix1.Size.columns != matrix2.Size.rows)
