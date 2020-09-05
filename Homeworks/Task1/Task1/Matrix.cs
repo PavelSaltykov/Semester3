@@ -48,6 +48,9 @@ namespace Task1
         private static int[,] ConvertToArray(List<string> matrix)
         {
             var rows = matrix.Count();
+            if (rows == 0)
+                throw new InvalidMatrixFileException("File is empty");
+
             var columns = matrix[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Count();
             var array = new int[rows, columns];
 

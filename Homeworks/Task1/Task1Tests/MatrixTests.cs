@@ -42,9 +42,10 @@ namespace Task1.Tests
             Assert.AreEqual(expected, matrix);
         }
 
-        [Test]
-        public void InvalidMatrixFromFileTest()
-            => Assert.Throws<InvalidMatrixFileException>(() => new Matrix("InvalidMatrix.txt"));
+        [TestCase("EmptyFile.txt")]
+        [TestCase("InvalidMatrix.txt")]
+        public void InvalidMatrixFileExceptionTest(string filename)
+            => Assert.Throws<InvalidMatrixFileException>(() => new Matrix(filename));
 
         [Test]
         public void WriteToFileTest()
