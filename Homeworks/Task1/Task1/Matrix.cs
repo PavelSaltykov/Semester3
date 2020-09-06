@@ -21,7 +21,12 @@ namespace Task1
         /// Initializes a new instance of the <see cref="Matrix"/> class.
         /// </summary>
         /// <param name="elements">Two-dimensional array of integer elements.</param>
-        public Matrix(int[,] elements) => this.elements = (int[,])elements.Clone();
+        public Matrix(int[,] elements)
+        {
+            if (elements.GetLength(0) == 0 || elements.GetLength(1) == 0)
+                throw new ArgumentException();
+            this.elements = (int[,])elements.Clone();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Matrix"/> class.
