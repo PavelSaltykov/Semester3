@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Task1
 {
@@ -50,7 +51,7 @@ namespace Task1
                     "must be equal to the number of rows in the second.");
 
             var result = new int[matrix1.Size.rows, matrix2.Size.columns];
-            var threads = new Thread[8];
+            var threads = new Thread[Environment.ProcessorCount];
             var step = threads.Length;
 
             for (var i = 0; i < threads.Length; ++i)
@@ -71,9 +72,13 @@ namespace Task1
             }
 
             foreach (var thread in threads)
+            {
                 thread.Start();
+            }
             foreach (var thread in threads)
+            {
                 thread.Join();
+            }
 
             return new Matrix(result);
         }

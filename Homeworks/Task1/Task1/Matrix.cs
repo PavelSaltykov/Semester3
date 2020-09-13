@@ -23,8 +23,12 @@ namespace Task1
         /// <param name="elements">Two-dimensional array of integer elements.</param>
         public Matrix(int[,] elements)
         {
+            if (elements == null)
+                throw new ArgumentNullException();
+
             if (elements.GetLength(0) == 0 || elements.GetLength(1) == 0)
                 throw new ArgumentException();
+
             this.elements = (int[,])elements.Clone();
         }
 
