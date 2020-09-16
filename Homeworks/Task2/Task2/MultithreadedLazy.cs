@@ -2,7 +2,7 @@
 
 namespace Task2
 {
-    class MultithreadedLazy<T> : ILazy<T>
+    internal class MultithreadedLazy<T> : ILazy<T>
     {
         private volatile bool isCalculated;
         private T result;

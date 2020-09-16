@@ -2,9 +2,9 @@
 
 namespace Task2
 {
-    public static class LazyFactory<T>
+    public static class LazyFactory
     {
-        public static ILazy<T> CreateLazy(Func<T> supplier)
+        public static ILazy<T> CreateLazy<T>(Func<T> supplier)
         {
             if (supplier == null)
                 throw new ArgumentNullException();
@@ -12,7 +12,7 @@ namespace Task2
             return new Lazy<T>(supplier);
         }
 
-        public static ILazy<T> CreateMultithreadedLazy(Func<T> supplier)
+        public static ILazy<T> CreateMultithreadedLazy<T>(Func<T> supplier)
         {
             if (supplier == null)
                 throw new ArgumentNullException();

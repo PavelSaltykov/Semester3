@@ -2,7 +2,7 @@
 
 namespace Task2
 {
-    class Lazy<T> : ILazy<T>
+    internal class Lazy<T> : ILazy<T>
     {
         private bool isCalculated;
         private T result;
