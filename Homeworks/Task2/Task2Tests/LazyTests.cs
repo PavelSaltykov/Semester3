@@ -7,10 +7,10 @@ namespace Task2.Tests
     [TestFixture]
     public class LazyTests
     {
-        private static Func<Func<int>, ILazy<int>>[] creationFunctions =
+        private static readonly Func<Func<int>, ILazy<int>>[] creationFunctions =
         {
             supplier => LazyFactory.CreateLazy(supplier),
-            supplier => LazyFactory.CreateMultithreadedLazy(supplier),
+            supplier => LazyFactory.CreateThreadSafeLazy(supplier),
         };
 
         [TestCaseSource(nameof(creationFunctions))]
@@ -40,11 +40,12 @@ namespace Task2.Tests
         }
 
         [Test]
+        [Repeat(10)]
         public void MultithreadedTest()
         {
             var value = 0;
             Func<int> func = () => --value;
-            var lazy = LazyFactory.CreateMultithreadedLazy(func);
+            var lazy = LazyFactory.CreateThreadSafeLazy(func);
 
             var threads = new Thread[Environment.ProcessorCount];
             var results = new int[threads.Length * 2];
