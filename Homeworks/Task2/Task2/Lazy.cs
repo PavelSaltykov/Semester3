@@ -10,7 +10,7 @@ namespace Task2
     {
         private bool isCalculated;
         private T result;
-        private readonly Func<T> supplier;
+        private Func<T> supplier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Lazy{T}"/> class.
@@ -25,6 +25,7 @@ namespace Task2
                 return result;
 
             result = supplier();
+            supplier = null;
             isCalculated = true;
             return result;
         }

@@ -10,7 +10,7 @@ namespace Task2
     {
         private volatile bool isCalculated;
         private T result;
-        private readonly Func<T> supplier;
+        private Func<T> supplier;
         private readonly object lockObject = new object();
 
         /// <summary>
@@ -31,6 +31,7 @@ namespace Task2
                     return result;
 
                 result = supplier();
+                supplier = null;
                 isCalculated = true;
                 return result;
             }
