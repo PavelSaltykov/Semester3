@@ -53,16 +53,52 @@ namespace Task3
             }
         }
 
-        private ConcurrentQueue<Action> actionQueue;
-        private Thread[] threads;
-        private AutoResetEvent AutoResetEvent = new AutoResetEvent(false);
+        private readonly ConcurrentQueue<Action> actionQueue = new ConcurrentQueue<Action>();
+        private readonly Thread[] threads;
+        private readonly AutoResetEvent AutoResetEvent = new AutoResetEvent(false);
 
         public MyThreadPool(int numberOfThreads)
         {
             if (numberOfThreads <= 0)
                 throw new ArgumentException("Number of threads must be greater than 0.");
 
+            threads = new Thread[numberOfThreads];
+            for (var i = 0; i < numberOfThreads; ++i)
+            {
+                threads[i] = new Thread(() => ExecuteActions());
+                threads[i].Start();
+            }
         }
 
+        private void ExecuteActions()
+        {
+            while (true)
+            {
+                if (actionQueue.TryDequeue(out var runTask))
+                {
+                    runTask();
+                }
+                else
+                {
+                    AutoResetEvent.WaitOne();
+                }
+            }
+        }
+
+        public IMyTask<TResult> Submit<TResult>(Func<TResult> supplier)
+        {
+            if (supplier == null)
+                throw new ArgumentNullException(nameof(supplier));
+
+            var task = new MyTask<TResult>(supplier);
+            actionQueue.Enqueue(task.Run);
+            AutoResetEvent.Set();
+            return task;
+        }
+
+        public void Shutdown()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
