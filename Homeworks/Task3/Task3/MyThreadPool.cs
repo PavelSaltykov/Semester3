@@ -56,6 +56,7 @@ namespace Task3
         private readonly ConcurrentQueue<Action> actionQueue = new ConcurrentQueue<Action>();
         private readonly Thread[] threads;
         private readonly AutoResetEvent AutoResetEvent = new AutoResetEvent(false);
+        private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
         public MyThreadPool(int numberOfThreads)
         {
@@ -72,8 +73,8 @@ namespace Task3
 
         private void ExecuteActions()
         {
-            while (true)
-            {
+            while (!cts.IsCancellationRequested || !actionQueue.IsEmpty)
+            {               
                 if (actionQueue.TryDequeue(out var runTask))
                 {
                     runTask();
@@ -81,12 +82,18 @@ namespace Task3
                 else
                 {
                     AutoResetEvent.WaitOne();
+
+                    if (cts.IsCancellationRequested)
+                        AutoResetEvent.Set();
                 }
             }
         }
 
         public IMyTask<TResult> Submit<TResult>(Func<TResult> supplier)
         {
+            if (cts.IsCancellationRequested)
+                throw new InvalidOperationException();
+
             if (supplier == null)
                 throw new ArgumentNullException(nameof(supplier));
 
@@ -98,7 +105,13 @@ namespace Task3
 
         public void Shutdown()
         {
-            throw new NotImplementedException();
+            cts.Cancel();
+            AutoResetEvent.Set();
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
         }
     }
 }
