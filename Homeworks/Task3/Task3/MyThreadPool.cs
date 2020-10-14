@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Task3
@@ -8,19 +9,27 @@ namespace Task3
     {
         private class MyTask<TResult> : IMyTask<TResult>
         {
-            public MyTask(Func<TResult> supplier) => this.supplier = supplier;
+            public MyTask(Func<TResult> supplier, MyThreadPool threadPool)
+            {
+                this.supplier = supplier;
+                this.threadPool = threadPool;
+            }
+
+            private readonly MyThreadPool threadPool;
+            private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+            private readonly List<Action> continuationTasks = new List<Action>();
 
             private Func<TResult> supplier;
-            public bool IsCompleted { get; private set; }
             private Exception caughtException;
-            private readonly ManualResetEvent ManualResetEvent = new ManualResetEvent(false);
+
+            public bool IsCompleted { get; private set; }
 
             private TResult result;
             public TResult Result
             {
                 get
                 {
-                    ManualResetEvent.WaitOne();
+                    manualResetEvent.WaitOne();
 
                     if (caughtException != null)
                         throw new AggregateException(caughtException);
@@ -43,19 +52,41 @@ namespace Task3
                 {
                     supplier = null;
                     IsCompleted = true;
-                    ManualResetEvent.Set();
+                    foreach (var taskRunAction in continuationTasks)
+                    {
+                        threadPool.actionQueue.Enqueue(taskRunAction);
+                        threadPool.autoResetEvent.Set();
+                    }
+                    manualResetEvent.Set();
                 }
             }
 
             public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> func)
             {
-                throw new NotImplementedException();
+                if (func == null)
+                    throw new ArgumentNullException(nameof(func));
+
+                if (threadPool.cts.IsCancellationRequested)
+                    throw new InvalidOperationException();
+
+                var newTask = new MyTask<TNewResult>(() => func(result), threadPool);
+                if (IsCompleted)
+                {
+                    threadPool.actionQueue.Enqueue(newTask.Run);
+                    threadPool.autoResetEvent.Set();
+                }
+                else
+                {
+                    continuationTasks.Add(newTask.Run);
+                }
+
+                return newTask;
             }
         }
 
         private readonly ConcurrentQueue<Action> actionQueue = new ConcurrentQueue<Action>();
         private readonly Thread[] threads;
-        private readonly AutoResetEvent AutoResetEvent = new AutoResetEvent(false);
+        private readonly AutoResetEvent autoResetEvent = new AutoResetEvent(false);
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
         public MyThreadPool(int numberOfThreads)
@@ -66,25 +97,25 @@ namespace Task3
             threads = new Thread[numberOfThreads];
             for (var i = 0; i < numberOfThreads; ++i)
             {
-                threads[i] = new Thread(() => ExecuteActions());
+                threads[i] = new Thread(() => ExecuteTaskRunActions());
                 threads[i].Start();
             }
         }
 
-        private void ExecuteActions()
+        private void ExecuteTaskRunActions()
         {
             while (!cts.IsCancellationRequested || !actionQueue.IsEmpty)
-            {               
-                if (actionQueue.TryDequeue(out var runTask))
+            {
+                if (actionQueue.TryDequeue(out var taskRunAction))
                 {
-                    runTask();
+                    taskRunAction();
                 }
                 else
                 {
-                    AutoResetEvent.WaitOne();
+                    autoResetEvent.WaitOne();
 
                     if (cts.IsCancellationRequested)
-                        AutoResetEvent.Set();
+                        autoResetEvent.Set();
                 }
             }
         }
@@ -97,16 +128,16 @@ namespace Task3
             if (supplier == null)
                 throw new ArgumentNullException(nameof(supplier));
 
-            var task = new MyTask<TResult>(supplier);
+            var task = new MyTask<TResult>(supplier, this);
             actionQueue.Enqueue(task.Run);
-            AutoResetEvent.Set();
+            autoResetEvent.Set();
             return task;
         }
 
         public void Shutdown()
         {
             cts.Cancel();
-            AutoResetEvent.Set();
+            autoResetEvent.Set();
 
             foreach (var thread in threads)
             {
