@@ -54,16 +54,18 @@ namespace Task3
                 }
                 finally
                 {
-                    supplier = null;
                     lock (lockObject)
                     {
                         IsCompleted = true;
-                        foreach (var taskRunAction in continuationTasks)
-                        {
-                            threadPool.actionQueue.Enqueue(taskRunAction);
-                            threadPool.autoResetEvent.Set();
-                        }
                     }
+
+                    supplier = null;
+                    foreach (var taskRunAction in continuationTasks)
+                    {
+                        threadPool.actionQueue.Enqueue(taskRunAction);
+                        threadPool.autoResetEvent.Set();
+                    }
+
                     manualResetEvent.Set();
                 }
             }

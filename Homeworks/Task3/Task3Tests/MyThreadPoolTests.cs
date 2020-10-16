@@ -175,6 +175,28 @@ namespace Task3.Tests
         }
 
         [Test]
+        public void ContinueWithSeveralTimesTest()
+        {
+            var manualResetEvent = new ManualResetEvent(false);
+            var task = threadPool.Submit(() =>
+            {
+                manualResetEvent.WaitOne();
+                return 1;
+            });
+
+            var continuationTask1 = task.ContinueWith(x => 2);
+            var continuationTask2 = task.ContinueWith(x => x+10);
+            manualResetEvent.Set();
+
+            _ = task.Result;
+            var continuationTask3 = task.ContinueWith(x => x.ToString());
+
+            Assert.AreEqual(2, continuationTask1.Result);
+            Assert.AreEqual(11, continuationTask2.Result);
+            Assert.AreEqual("1", continuationTask3.Result);
+        }
+
+        [Test]
         public void ContinueWithAfterShutdownTest()
         {
             var task = threadPool.Submit(() => 0);
