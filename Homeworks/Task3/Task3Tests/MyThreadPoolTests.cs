@@ -14,7 +14,6 @@ namespace Task3.Tests
         public void SetUp() => threadPool = new MyThreadPool(Environment.ProcessorCount);
 
         [Test]
-        [Repeat(100)]
         public void NumberOfWorkingThreadsTest()
         {
             int expectedNumberOfThreads = Environment.ProcessorCount;
@@ -45,7 +44,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ResultTest()
         {
             var tasks = new List<IMyTask<int>>();
@@ -64,7 +62,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void IsCompletedTest()
         {
             var manualResetEvent = new ManualResetEvent(false);
@@ -82,7 +79,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void AggregateExceptionTest()
         {
             var task = threadPool.Submit(() =>
@@ -97,7 +93,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void SubmitAfterShutdownTest()
         {
             threadPool.Shutdown();
@@ -105,7 +100,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ShutdownWithLongTaskTest()
         {
             var expectedResult = "result";
@@ -121,7 +115,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void SimpleContinueWithTest()
         {
             var task = threadPool.Submit(() => -1);
@@ -132,7 +125,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ContinueWithShouldNotBlockThreadTest()
         {
             var manualResetEvent = new ManualResetEvent(false);
@@ -169,7 +161,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ContinueWithShouldBeComletedTest()
         {
             var task = threadPool.Submit(() =>
@@ -184,7 +175,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ContinueWithAfterShutdownTest()
         {
             var task = threadPool.Submit(() => 0);
@@ -194,7 +184,6 @@ namespace Task3.Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ShutdownSeveralTimesTest()
         {
             threadPool.Submit(() => 2 * 2);

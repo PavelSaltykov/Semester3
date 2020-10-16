@@ -20,6 +20,7 @@ namespace Task3
 
             private readonly MyThreadPool threadPool;
             private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+            private readonly object lockObject = new object();
             private readonly List<Action> continuationTasks = new List<Action>();
 
             private Func<TResult> supplier;
@@ -54,11 +55,14 @@ namespace Task3
                 finally
                 {
                     supplier = null;
-                    IsCompleted = true;
-                    foreach (var taskRunAction in continuationTasks)
+                    lock (lockObject)
                     {
-                        threadPool.actionQueue.Enqueue(taskRunAction);
-                        threadPool.autoResetEvent.Set();
+                        IsCompleted = true;
+                        foreach (var taskRunAction in continuationTasks)
+                        {
+                            threadPool.actionQueue.Enqueue(taskRunAction);
+                            threadPool.autoResetEvent.Set();
+                        }
                     }
                     manualResetEvent.Set();
                 }
@@ -73,14 +77,18 @@ namespace Task3
                     throw new InvalidOperationException();
 
                 var newTask = new MyTask<TNewResult>(() => func(result), threadPool);
-                if (IsCompleted)
+
+                lock (lockObject)
                 {
-                    threadPool.actionQueue.Enqueue(newTask.Run);
-                    threadPool.autoResetEvent.Set();
-                }
-                else
-                {
-                    continuationTasks.Add(newTask.Run);
+                    if (IsCompleted)
+                    {
+                        threadPool.actionQueue.Enqueue(newTask.Run);
+                        threadPool.autoResetEvent.Set();
+                    }
+                    else
+                    {
+                        continuationTasks.Add(newTask.Run);
+                    }
                 }
 
                 return newTask;

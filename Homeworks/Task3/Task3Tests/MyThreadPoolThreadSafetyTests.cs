@@ -26,7 +26,6 @@ namespace Task3Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void ResultThreadSafeTest()
         {
             var task = threadPool.Submit(() =>
@@ -97,7 +96,6 @@ namespace Task3Tests
         }
 
         [Test]
-        [Repeat(100)]
         public void SubmitThreadSafeTest()
         {
             for (var i = 0; i < numberOfThreads; ++i)
