@@ -26,6 +26,7 @@ namespace Task3Tests
         }
 
         [Test]
+        [Repeat(100)]
         public void ResultThreadSafeTest()
         {
             var task = threadPool.Submit(() =>
@@ -43,7 +44,7 @@ namespace Task3Tests
             manualResetEvent.Set();
             foreach (var thread in threads)
             {
-                if (!thread.Join(10))
+                if (!thread.Join(100))
                 {
                     Assert.Fail("Deadlock");
                 }
@@ -57,6 +58,7 @@ namespace Task3Tests
         }
 
         [Test]
+        [Repeat(400)]
         public void ContinueWithThreadSafeTest()
         {
             var task = threadPool.Submit(() =>
@@ -81,7 +83,7 @@ namespace Task3Tests
             }
             foreach (var thread in threads)
             {
-                if (!thread.Join(20))
+                if (!thread.Join(200))
                 {
                     Assert.Fail("Deadlock");
                 }
@@ -95,6 +97,7 @@ namespace Task3Tests
         }
 
         [Test]
+        [Repeat(100)]
         public void SubmitThreadSafeTest()
         {
             for (var i = 0; i < numberOfThreads; ++i)
@@ -105,7 +108,7 @@ namespace Task3Tests
 
             foreach (var thread in threads)
             {
-                if (!thread.Join(10))
+                if (!thread.Join(100))
                 {
                     Assert.Fail("Deadlock");
                 }
