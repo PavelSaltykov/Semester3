@@ -37,9 +37,9 @@ namespace Task3.Tests
             });
 
             waitingThread.Start();
-            if (!waitingThread.Join(100))
+            if (!waitingThread.Join(10))
             {
-                Assert.Fail($"Number of threads in the {nameof(threadPool)} is less than {expectedNumberOfThreads}");
+                Assert.Fail($"Number of threads in the {nameof(threadPool)} is less than expected");
             }
         }
 
@@ -117,11 +117,11 @@ namespace Task3.Tests
         [Test]
         public void SimpleContinueWithTest()
         {
-            var task = threadPool.Submit(() => 0);
+            var task = threadPool.Submit(() => -1);
             _ = task.Result;
 
             var continuationTask = task.ContinueWith(x => x + 5);
-            Assert.AreEqual(5, continuationTask.Result);
+            Assert.AreEqual(4, continuationTask.Result);
         }
 
         [Test]
@@ -141,7 +141,7 @@ namespace Task3.Tests
             });
 
             threadWithContinuationTask.Start();
-            if (!threadWithContinuationTask.Join(100))
+            if (!threadWithContinuationTask.Join(10))
             {
                 Assert.Fail("ContinueWith blocked thread");
             }
@@ -150,17 +150,17 @@ namespace Task3.Tests
         [Test]
         public void ShutdownAfterContinueWithTest()
         {
-            var task = threadPool.Submit(() => 0);
+            var task = threadPool.Submit(() => -1);
 
             var continuationTask = task.ContinueWith(x =>
             {
-                Thread.Sleep(20);
+                Thread.Sleep(10);
                 return x.ToString();
             });
 
             threadPool.Shutdown();
             Assert.IsTrue(continuationTask.IsCompleted);
-            Assert.AreEqual("0", continuationTask.Result);
+            Assert.AreEqual("-1", continuationTask.Result);
         }
 
         [Test]
