@@ -57,7 +57,7 @@ namespace Task3Tests
         }
 
         [Test]
-        [Repeat(400)]
+        [Repeat(100)]
         public void ContinueWithThreadSafeTest()
         {
             var task = threadPool.Submit(() =>
