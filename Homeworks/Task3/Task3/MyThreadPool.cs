@@ -5,6 +5,9 @@ using System.Threading;
 
 namespace Task3
 {
+    /// <summary>
+    /// Provides a pool of threads that can be used to execute tasks. 
+    /// </summary>
     public class MyThreadPool
     {
         private class MyTask<TResult> : IMyTask<TResult>
@@ -89,6 +92,10 @@ namespace Task3
         private readonly AutoResetEvent autoResetEvent = new AutoResetEvent(false);
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
 
+        /// <summary>
+        /// Initializes a new instanse of the <see cref="MyThreadPool"/> class and starts threads.
+        /// </summary>
+        /// <param name="numberOfThreads">The number of threads started in the <see cref="MyThreadPool"/>.</param>
         public MyThreadPool(int numberOfThreads)
         {
             if (numberOfThreads <= 0)
@@ -120,6 +127,12 @@ namespace Task3
             }
         }
 
+        /// <summary>
+        /// Submits a task for execution.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result produced by the task.</typeparam>
+        /// <param name="supplier">The function that calculates the result.</param>
+        /// <returns>A new instance of the <see cref="IMyTask{TResult}"/>.</returns>
         public IMyTask<TResult> Submit<TResult>(Func<TResult> supplier)
         {
             if (cts.IsCancellationRequested)
@@ -134,6 +147,10 @@ namespace Task3
             return task;
         }
 
+        /// <summary>
+        /// Terminates threads.
+        /// Waits until all tasks are completed blocking the calling thread.
+        /// </summary>
         public void Shutdown()
         {
             cts.Cancel();

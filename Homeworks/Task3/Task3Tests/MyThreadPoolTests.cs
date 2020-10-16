@@ -113,7 +113,7 @@ namespace Task3.Tests
             Assert.IsTrue(longTask.IsCompleted);
             Assert.AreEqual(expectedResult, longTask.Result);
         }
-        
+
         [Test]
         public void SimpleContinueWithTest()
         {
@@ -164,12 +164,35 @@ namespace Task3.Tests
         }
 
         [Test]
+        public void ContinueWithShouldBeComletedTest()
+        {
+            var task = threadPool.Submit(() =>
+            {
+                Thread.Sleep(20);
+                return 1;
+            });
+            var continuationTask = task.ContinueWith(x => x + 1);
+            threadPool.Shutdown();
+            Assert.IsTrue(continuationTask.IsCompleted);
+            Assert.AreEqual(2, continuationTask.Result);
+        }
+
+        [Test]
         public void ContinueWithAfterShutdownTest()
         {
             var task = threadPool.Submit(() => 0);
 
             threadPool.Shutdown();
             Assert.Throws<InvalidOperationException>(() => task.ContinueWith(x => x.ToString()));
+        }
+
+        [Test]
+        public void ShutdownSeveralTimesTest()
+        {
+            threadPool.Submit(() => 2 * 2);
+            threadPool.Shutdown();
+            threadPool.Shutdown();
+            Assert.Pass();
         }
     }
 }
