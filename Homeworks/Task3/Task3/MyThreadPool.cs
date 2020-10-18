@@ -58,15 +58,14 @@ namespace Task3
                     {
                         IsCompleted = true;
                     }
+                    manualResetEvent.Set();
 
                     supplier = null;
                     foreach (var taskRunAction in continuationTasks)
                     {
-                        threadPool.actionQueue.Enqueue(taskRunAction);
-                        threadPool.autoResetEvent.Set();
+                        threadPool.EnqueueTaskRunAction(taskRunAction);
+                        threadPool.numberOfContinuationTasksPendingEnqueue--;
                     }
-
-                    manualResetEvent.Set();
                 }
             }
 
@@ -78,21 +77,24 @@ namespace Task3
                 if (threadPool.cts.IsCancellationRequested)
                     throw new InvalidOperationException();
 
-                var newTask = new MyTask<TNewResult>(() => func(result), threadPool);
-
                 lock (lockObject)
                 {
                     if (IsCompleted)
                     {
-                        threadPool.EnqueueTaskRunAction(newTask.Run);
+                        return threadPool.Submit(() => func(result));
                     }
-                    else
+
+                    lock (threadPool.ctsLockObject)
                     {
+                        if (threadPool.cts.IsCancellationRequested)
+                            throw new InvalidOperationException();
+
+                        var newTask = new MyTask<TNewResult>(() => func(result), threadPool);
                         continuationTasks.Add(newTask.Run);
+                        threadPool.numberOfContinuationTasksPendingEnqueue++;
+                        return newTask;
                     }
                 }
-
-                return newTask;
             }
         }
 
@@ -101,6 +103,7 @@ namespace Task3
         private readonly AutoResetEvent autoResetEvent = new AutoResetEvent(false);
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private readonly object ctsLockObject = new object();
+        private volatile int numberOfContinuationTasksPendingEnqueue;
 
         /// <summary>
         /// Initializes a new instanse of the <see cref="MyThreadPool"/> class and starts threads.
@@ -121,7 +124,7 @@ namespace Task3
 
         private void ExecuteTaskRunActions()
         {
-            while (!cts.IsCancellationRequested || !actionQueue.IsEmpty)
+            while (!cts.IsCancellationRequested || !actionQueue.IsEmpty || numberOfContinuationTasksPendingEnqueue > 0)
             {
                 if (actionQueue.TryDequeue(out var taskRunAction))
                 {
@@ -131,7 +134,7 @@ namespace Task3
                 {
                     autoResetEvent.WaitOne();
 
-                    if (cts.IsCancellationRequested)
+                    if (actionQueue.Count > 1 || cts.IsCancellationRequested)
                         autoResetEvent.Set();
                 }
             }
@@ -152,19 +155,24 @@ namespace Task3
                 throw new ArgumentNullException(nameof(supplier));
 
             var task = new MyTask<TResult>(supplier, this);
-            EnqueueTaskRunAction(task.Run);
+            EnqueueTask(task);
             return task;
         }
 
-        private void EnqueueTaskRunAction(Action taskRunAction)
+        private void EnqueueTask<TResult>(MyTask<TResult> task)
         {
             lock (ctsLockObject)
             {
                 if (cts.IsCancellationRequested)
                     throw new InvalidOperationException();
 
-                actionQueue.Enqueue(taskRunAction);
+                EnqueueTaskRunAction(task.Run);
             }
+        }
+
+        private void EnqueueTaskRunAction(Action taskRunAction)
+        {
+            actionQueue.Enqueue(taskRunAction);
             autoResetEvent.Set();
         }
 
@@ -177,9 +185,8 @@ namespace Task3
             lock (ctsLockObject)
             {
                 cts.Cancel();
+                autoResetEvent.Set();
             }
-
-            autoResetEvent.Set();
 
             foreach (var thread in threads)
             {
