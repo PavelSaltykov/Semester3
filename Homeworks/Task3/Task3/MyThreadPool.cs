@@ -84,8 +84,7 @@ namespace Task3
                 {
                     if (IsCompleted)
                     {
-                        threadPool.actionQueue.Enqueue(newTask.Run);
-                        threadPool.autoResetEvent.Set();
+                        threadPool.EnqueueTaskRunAction(newTask.Run);
                     }
                     else
                     {
@@ -101,6 +100,7 @@ namespace Task3
         private readonly Thread[] threads;
         private readonly AutoResetEvent autoResetEvent = new AutoResetEvent(false);
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
+        private readonly object ctsLockObject = new object();
 
         /// <summary>
         /// Initializes a new instanse of the <see cref="MyThreadPool"/> class and starts threads.
@@ -152,9 +152,20 @@ namespace Task3
                 throw new ArgumentNullException(nameof(supplier));
 
             var task = new MyTask<TResult>(supplier, this);
-            actionQueue.Enqueue(task.Run);
-            autoResetEvent.Set();
+            EnqueueTaskRunAction(task.Run);
             return task;
+        }
+
+        private void EnqueueTaskRunAction(Action taskRunAction)
+        {
+            lock (ctsLockObject)
+            {
+                if (cts.IsCancellationRequested)
+                    throw new InvalidOperationException();
+
+                actionQueue.Enqueue(taskRunAction);
+            }
+            autoResetEvent.Set();
         }
 
         /// <summary>
@@ -163,7 +174,11 @@ namespace Task3
         /// </summary>
         public void Shutdown()
         {
-            cts.Cancel();
+            lock (ctsLockObject)
+            {
+                cts.Cancel();
+            }
+
             autoResetEvent.Set();
 
             foreach (var thread in threads)

@@ -185,7 +185,7 @@ namespace Task3.Tests
             });
 
             var continuationTask1 = task.ContinueWith(x => 2);
-            var continuationTask2 = task.ContinueWith(x => x+10);
+            var continuationTask2 = task.ContinueWith(x => x + 10);
             manualResetEvent.Set();
 
             _ = task.Result;

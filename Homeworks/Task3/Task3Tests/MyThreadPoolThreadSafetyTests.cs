@@ -118,5 +118,42 @@ namespace Task3Tests
                 Assert.AreEqual(10, result);
             }
         }
+
+        [Test]
+        [Repeat(100)]
+        public void SubmitWithShutdownTest()
+        {
+            for (var i = 0; i < numberOfThreads; ++i)
+            {
+                threads[i] = new Thread(() =>
+                {
+                    try
+                    {
+                        manualResetEvent.WaitOne();
+                        results.Enqueue(threadPool.Submit(() => 10).Result);
+                    }
+                    catch (InvalidOperationException) { }
+                });
+
+                threads[i].Start();
+            }
+
+            var threadWithShutdown = new Thread(() =>
+            {
+                manualResetEvent.WaitOne();
+                threadPool.Shutdown();
+            });
+            threadWithShutdown.Start();
+
+            manualResetEvent.Set();
+
+            foreach (var thread in threads)
+            {
+                if (!thread.Join(100))
+                {
+                    Assert.Fail("Deadlock");
+                }
+            }
+        }
     }
 }
