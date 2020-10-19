@@ -64,7 +64,7 @@ namespace Task3
                     foreach (var taskRunAction in continuationTasks)
                     {
                         threadPool.EnqueueTaskRunAction(taskRunAction);
-                        threadPool.numberOfContinuationTasksPendingEnqueue--;
+                        Interlocked.Decrement(ref threadPool.numberOfContinuationTasksPendingEnqueue);
                     }
                 }
             }
@@ -91,7 +91,7 @@ namespace Task3
 
                         var newTask = new MyTask<TNewResult>(() => func(result), threadPool);
                         continuationTasks.Add(newTask.Run);
-                        threadPool.numberOfContinuationTasksPendingEnqueue++;
+                        Interlocked.Increment(ref threadPool.numberOfContinuationTasksPendingEnqueue);
                         return newTask;
                     }
                 }
