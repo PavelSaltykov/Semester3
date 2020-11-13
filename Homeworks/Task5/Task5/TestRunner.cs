@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Task5.TestInformation;
 
 namespace Task5
 {
@@ -15,7 +16,7 @@ namespace Task5
 
         }
 
-        public IEnumerable<TestResult> GetResults()
+        public IEnumerable<TestInfo> GetTestsInfo()
         {
             throw new NotImplementedException();
         }
