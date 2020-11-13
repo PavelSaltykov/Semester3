@@ -6,24 +6,27 @@ namespace Task5
     {
         public string AssemblyName { get; }
 
+        public string ClassName { get; }
+
         public string MethodName { get; }
 
         public bool IsPassed { get; }
 
-        public bool Ignored { get; }
+        public bool IsIgnored { get; }
 
         public string ReasonToIgnore { get; }
 
         public TimeSpan Time { get; }
 
-        public TestResult(string assemblyName, string methodName, 
-            bool isPassed, bool ignored, string reason, TimeSpan time)
+        public TestResult(string assemblyName, string className, string methodName,
+            bool isPassed, bool isIgnored, string reasonToIgnore, TimeSpan time)
         {
             AssemblyName = assemblyName;
+            ClassName = className;
             MethodName = methodName;
             IsPassed = isPassed;
-            Ignored = ignored;
-            ReasonToIgnore = reason;
+            IsIgnored = isIgnored;
+            ReasonToIgnore = reasonToIgnore;
             Time = time;
         }
     }
