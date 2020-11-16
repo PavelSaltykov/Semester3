@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Task5
 {
@@ -25,9 +26,10 @@ namespace Task5
                 Console.WriteLine("Report:");
                 rw.Write(testRunner.GetTestsInfo());
             }
-            catch (InvalidOperationException e)
+            catch (Exception e) when
+                (e is IOException || e is InvalidOperationException || e is AssembliesNotFoundException)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"{e.GetType()}: {e.Message}");
             }
         }
     }

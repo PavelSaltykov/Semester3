@@ -8,11 +8,17 @@ namespace TestProject1
         [Test(Ignore = "ignore")]
         public int Test1() => 0;
 
-        [Test()]
+        [Test]
         public void Test()
         {
-            Thread.Sleep(10);
+            Thread.Sleep(100);
         }
 
+        [Test]
+        public void Test2()
+        {
+            var array = new int[2];
+            array[2] = 0;
+        }
     }
 }

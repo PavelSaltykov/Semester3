@@ -21,7 +21,7 @@ namespace Task5
         {
             var assemblyFiles = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories);
             if (assemblyFiles.Count() == 0)
-                throw new InvalidOperationException($"Assemblies not found in path: {path}.");
+                throw new AssembliesNotFoundException($"Assemblies not found in path: {path}.");
 
             var classes = assemblyFiles.Select(Assembly.LoadFrom).ToHashSet()
                 .SelectMany(a => a.ExportedTypes)
@@ -100,14 +100,14 @@ namespace Task5
                 method.Invoke(instance, null);
                 isPassed = attribute.Expected == null;
             }
-            catch (Exception e) when (e.GetType() != attribute.Expected)
+            catch (TargetInvocationException e) when (e.InnerException.GetType() != attribute.Expected)
             {
-                unexpected = e;
+                unexpected = e.InnerException;
             }
             finally
             {
                 stopwatch.Stop();
-                var testInfo = new TestResultInfo(assemblyName, className, methodName, 
+                var testInfo = new TestResultInfo(assemblyName, className, methodName,
                     isPassed, unexpected, stopwatch.Elapsed);
                 testsInfo.Enqueue(testInfo);
             }

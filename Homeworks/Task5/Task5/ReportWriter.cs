@@ -41,9 +41,19 @@ namespace Task5
                 writer.WriteLine($"\tClass: {groupByClass.Key}");
                 foreach (var info in groupByClass)
                 {
-                    writer.WriteLine($"\t\t{info}");
+                    var symbol = Symbol(info);
+                    writer.WriteLine($"\t\t{symbol} {info}");
                 }
             }
+        }
+
+        private char Symbol(TestInfo info)
+        {
+            if (info is TestResultInfo)
+            {
+                return (info as TestResultInfo).IsPassed ? '+' : '-';
+            }
+            return '?';
         }
 
         public void Dispose() => writer.Dispose();
