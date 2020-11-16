@@ -10,10 +10,14 @@ namespace Task5
     {
         private readonly TextWriter writer;
 
-        public ReportWriter(TextWriter writer) => this.writer = writer;
+        public ReportWriter(TextWriter writer) => this.writer = writer ??
+            throw new ArgumentNullException(nameof(writer));
 
         public void Write(IEnumerable<TestInfo> testsInfo)
         {
+            if (testsInfo == null)
+                throw new ArgumentNullException(nameof(testsInfo));
+
             testsInfo = testsInfo.OrderBy(info => info.AssemblyName)
                                  .ThenBy(info => info.ClassName)
                                  .ThenBy(info => info.MethodName);

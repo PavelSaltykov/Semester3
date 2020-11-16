@@ -23,7 +23,7 @@ namespace Task5
             if (assemblyFiles.Count() == 0)
                 throw new InvalidOperationException($"Assemblies not found in path: {path}.");
 
-            var classes = assemblyFiles.Select(Assembly.Load)
+            var classes = assemblyFiles.Select(Assembly.LoadFrom).ToHashSet()
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => t.IsClass);
 
@@ -91,9 +91,9 @@ namespace Task5
                 return;
             }
 
-            var stopwatch = new Stopwatch();
             var isPassed = false;
             Exception unexpected = null;
+            var stopwatch = Stopwatch.StartNew();
             try
             {
                 stopwatch.Start();

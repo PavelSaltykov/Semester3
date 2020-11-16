@@ -23,10 +23,10 @@ namespace Task5.TestInformation
         {
             var info = base.ToString() + " ";
 
-            var failMessage = $"FAILED: {UnexpectedException.GetType().Name}: {UnexpectedException.Message} | ";
+            var failMessage = $"FAILED: {UnexpectedException?.GetType().Name}: {UnexpectedException?.Message} | ";
             info += IsPassed ? "Passed | " : failMessage;
 
-            info += $"Time: {Time:mm\\:ss\\.fff}";
+            info += $@"Time: {Time:mm\:ss\.fff}";
             return info;
         }
     }
