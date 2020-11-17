@@ -6,16 +6,19 @@ namespace Task5.TestInformation
     {
         public bool IsPassed { get; }
 
-        public Exception UnexpectedException { get; }
+        public Type Expected { get; }
+
+        public Exception Unexpected { get; }
 
         public TimeSpan Time { get; }
 
         public TestResultInfo(string assemblyName, string className, string methodName,
-            bool isPassed, Exception unexpectedException, TimeSpan time)
+            bool isPassed, Type expectedException, Exception unexpected, TimeSpan time)
             : base(assemblyName, className, methodName)
         {
             IsPassed = isPassed;
-            UnexpectedException = unexpectedException;
+            Expected = expectedException;
+            Unexpected = unexpected;
             Time = time;
         }
 
@@ -23,11 +26,27 @@ namespace Task5.TestInformation
         {
             var info = base.ToString() + " ";
 
-            var failMessage = $"FAILED: {UnexpectedException?.GetType().Name}: {UnexpectedException?.Message} | ";
-            info += IsPassed ? "Passed | " : failMessage;
+            info += IsPassed ? "Passed | " : $"FAILED:  {FailedMessage} | ";
 
-            info += $@"Time: {Time:mm\:ss\.fff}";
+            info += $@"{Time:mm\:ss\.fff}";
             return info;
+        }
+
+        private string FailedMessage
+        {
+            get
+            {
+                if (Expected == null)
+                {
+                    return $"Unexpected exception: {Unexpected.GetType().Name} ({Unexpected.Message})";
+                }
+                if (Unexpected == null)
+                {
+                    return $"Expected: {Expected.Name}";
+                }
+                return $"Expected: {Expected.Name}, " +
+                        $"but was: {Unexpected.GetType().Name} ({Unexpected.Message})";
+            }
         }
     }
 }

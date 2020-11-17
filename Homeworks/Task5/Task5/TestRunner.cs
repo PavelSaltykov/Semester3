@@ -23,7 +23,7 @@ namespace Task5
             if (assemblyFiles.Count() == 0)
                 throw new AssembliesNotFoundException($"Assemblies not found in path: {path}.");
 
-            var classes = assemblyFiles.Select(Assembly.LoadFrom).ToHashSet()
+            var classes = assemblyFiles.Select(Assembly.LoadFrom).Distinct()
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => t.IsClass);
 
@@ -100,15 +100,16 @@ namespace Task5
                 method.Invoke(instance, null);
                 isPassed = attribute.Expected == null;
             }
-            catch (TargetInvocationException e) when (e.InnerException.GetType() != attribute.Expected)
+            catch (TargetInvocationException e)
             {
-                unexpected = e.InnerException;
+                isPassed = e.InnerException.GetType() == attribute.Expected;
+                unexpected = e.InnerException.GetType() == attribute.Expected ? null : e.InnerException;
             }
             finally
             {
                 stopwatch.Stop();
                 var testInfo = new TestResultInfo(assemblyName, className, methodName,
-                    isPassed, unexpected, stopwatch.Elapsed);
+                    isPassed, attribute.Expected, unexpected, stopwatch.Elapsed);
                 testsInfo.Enqueue(testInfo);
             }
         }

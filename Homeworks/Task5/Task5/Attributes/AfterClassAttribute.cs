@@ -3,7 +3,7 @@
 namespace Task5.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    class AfterClassAttribute : Attribute
+    public class AfterClassAttribute : Attribute
     {
     }
 }

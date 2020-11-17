@@ -3,9 +3,9 @@ using System.IO;
 
 namespace Task5
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             if (args.Length != 1)
             {
@@ -24,6 +24,7 @@ namespace Task5
 
                 using var rw = new ReportWriter(Console.Out);
                 Console.WriteLine("Report:");
+                Console.WriteLine();
                 rw.Write(testRunner.GetTestsInfo());
             }
             catch (Exception e) when
