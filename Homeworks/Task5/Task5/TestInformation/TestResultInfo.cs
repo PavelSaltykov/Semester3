@@ -2,6 +2,9 @@
 
 namespace Task5.TestInformation
 {
+    /// <summary>
+    /// Reresents information about executed test method.
+    /// </summary>
     public class TestResultInfo : TestInfo
     {
         public bool IsPassed { get; }

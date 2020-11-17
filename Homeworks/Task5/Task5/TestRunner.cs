@@ -11,12 +11,19 @@ using Task5.TestInformation;
 
 namespace Task5
 {
+    /// <summary>
+    /// Allows to run tests from assemblies.
+    /// </summary>
     public class TestRunner
     {
         private readonly ConcurrentQueue<TestInfo> testsInfo = new ConcurrentQueue<TestInfo>();
 
         private readonly ConcurrentQueue<Type> classTypes;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestRunner"/> class.
+        /// </summary>
+        /// <param name="path">Path to assemblies.</param>
         public TestRunner(string path)
         {
             var assemblyFiles = Directory.EnumerateFiles(path, "*.dll", SearchOption.AllDirectories);
@@ -33,6 +40,9 @@ namespace Task5
             classTypes = new ConcurrentQueue<Type>(classesContaininigTests);
         }
 
+        /// <summary>
+        /// Runs all tests from assemblies.
+        /// </summary>
         public void Run() => Parallel.ForEach(classTypes, ExecuteTestsInClass);
 
         private void ExecuteTestsInClass(Type classType)
@@ -120,6 +130,9 @@ namespace Task5
                 .Where(mi => mi.GetCustomAttributes().Any(attr => attr.GetType() == attributeType));
         }
 
+        /// <summary>
+        /// Returns the information about tests.
+        /// </summary>
         public IEnumerable<TestInfo> GetTestsInfo() => testsInfo;
     }
 }

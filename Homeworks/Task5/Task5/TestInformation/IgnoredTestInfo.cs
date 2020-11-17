@@ -1,5 +1,8 @@
 ﻿namespace Task5.TestInformation
 {
+    /// <summary>
+    /// Reresents information about ignored test method.
+    /// </summary>
     public class IgnoredTestInfo : TestInfo
     {
         public string Message { get; }

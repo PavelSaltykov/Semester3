@@ -1,5 +1,8 @@
 ﻿namespace Task5.TestInformation
 {
+    /// <summary>
+    /// Reresents information about test method.
+    /// </summary>
     public abstract class TestInfo
     {
         public string AssemblyName { get; }

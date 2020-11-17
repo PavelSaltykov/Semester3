@@ -23,7 +23,6 @@ namespace Task5.Tests
         public void NumberOfTestsTest()
         {
             Assert.AreEqual(6, simpleTestsInfo.Count());
-
             Assert.AreEqual(0, simpleTestsInfo.Where(i => i.ClassName == "WithoutAttributeTest").Count());
         }
 

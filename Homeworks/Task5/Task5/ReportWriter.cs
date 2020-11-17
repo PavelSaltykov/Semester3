@@ -6,13 +6,24 @@ using Task5.TestInformation;
 
 namespace Task5
 {
+    /// <summary>
+    /// Provides output of the report to the output stream.
+    /// </summary>
     public class ReportWriter : IDisposable
     {
         private readonly TextWriter writer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReportWriter"/> class.
+        /// </summary>
+        /// <param name="writer">Object that represents the standard output stream.</param>
         public ReportWriter(TextWriter writer) => this.writer = writer ??
             throw new ArgumentNullException(nameof(writer));
 
+        /// <summary>
+        /// Prints information about tests to the output stream.
+        /// </summary>
+        /// <param name="testsInfo">Collection of tests information.</param>
         public void Write(IEnumerable<TestInfo> testsInfo)
         {
             if (testsInfo == null)

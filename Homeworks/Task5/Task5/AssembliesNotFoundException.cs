@@ -2,6 +2,9 @@
 
 namespace Task5
 {
+    /// <summary>
+    /// The exception that is thrown when assembly files were not found.
+    /// </summary>
     [Serializable]
     public class AssembliesNotFoundException : Exception
     {
