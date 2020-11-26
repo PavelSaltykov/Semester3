@@ -1,26 +1,29 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace FtpClient
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            Console.WriteLine("FtpClient");
-            const int port = 8888;
+            Console.ReadLine();
 
+            const int port = 8888;
             using var client = new TcpClient("localhost", port);
+
             using var stream = client.GetStream();
             using var writer = new StreamWriter(stream) { AutoFlush = true };
-
-            var message = Console.ReadLine();
-            writer.WriteLine(message);
-
             using var reader = new StreamReader(stream);
-            var data = reader.ReadLine();
-            Console.WriteLine($"Received: {data}");
+
+            while (true)
+            {
+                Console.Write("Enter request: ");
+                await writer.WriteLineAsync(Console.ReadLine());
+                Console.WriteLine($"Response: {await reader.ReadLineAsync()}");
+            }
         }
     }
 }
