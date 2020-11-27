@@ -7,12 +7,25 @@ using System.Threading.Tasks;
 
 namespace FtpServer
 {
+    /// <summary>
+    /// FTP server processing two requests: 
+    /// listing files in a directory on the server
+    /// and downloading a file from the server.
+    /// </summary>
     public class Server
     {
         private readonly TcpListener listener;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Server"/> class. 
+        /// </summary>
+        /// <param name="localAddr"><see cref="IPAddress"/> that represents the local IP address.</param>
+        /// <param name="port">The port on which to listen for incoming connection attempts.</param>
         public Server(IPAddress localAddr, int port) => listener = new TcpListener(localAddr, port);
 
+        /// <summary>
+        /// Starts the server.
+        /// </summary>
         public async Task Start()
         {
             listener.Start();
@@ -22,7 +35,7 @@ namespace FtpServer
                 var stream = new NetworkStream(socket);
                 try
                 {
-                    _ = Task.Run(async () => await HandleRequests(stream));
+                    _ = Task.Run(async () => await ProcessRequests(stream));
                 }
                 catch
                 {
@@ -32,7 +45,7 @@ namespace FtpServer
             }
         }
 
-        private async Task HandleRequests(NetworkStream stream)
+        private async Task ProcessRequests(NetworkStream stream)
         {
             using var reader = new StreamReader(stream);
             using var writer = new StreamWriter(stream) { AutoFlush = true };
