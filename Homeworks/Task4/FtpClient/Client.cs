@@ -69,20 +69,18 @@ namespace FtpClient
         public async Task GetAsync(string path, string destinationPath, string filename)
         {
             await writer.WriteLineAsync($"2 {path}");
-            if (reader.Peek() == '-')
-            {
-                await reader.ReadLineAsync();
-                throw new InvalidOperationException($"File not found at path: {path}");
-            }
 
             var size = new char[long.MaxValue.ToString().Length + 1];
-            var index = -1;
-            do
+            await reader.ReadAsync(size, 0, 2);
+            if (size[0] == '-')
+                throw new InvalidOperationException($"File not found at path: {path}");
+
+            var index = 1;
+            while (size[index] != ' ')
             {
                 index++;
                 await reader.ReadAsync(size, index, 1);
-
-            } while (size[index] != ' ');
+            }
 
             await Download(long.Parse(size), destinationPath, filename);
         }
@@ -105,6 +103,7 @@ namespace FtpClient
                 await fileStream.WriteAsync(buffer, 0, currentBufferSize);
                 size -= maxBufferSize;
             }
+            await reader.ReadLineAsync();
         }
 
         public void Dispose()

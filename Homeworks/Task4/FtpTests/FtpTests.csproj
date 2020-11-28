@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FtpClient\FtpClient.csproj" />
     <ProjectReference Include="..\FtpServer\FtpServer.csproj" />
   </ItemGroup>
 

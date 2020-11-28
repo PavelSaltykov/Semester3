@@ -1,34 +1,24 @@
 ﻿using NUnit.Framework;
 using System.IO;
-using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ftp.Tests
 {
     [TestFixture]
     public class ServerTests
     {
-        private const int port = 8888;
-        private Server server;
+        private const int port = ServerSettings.Port;
         private TcpClient tcpClient;
 
         private StreamReader reader;
         private StreamWriter writer;
-        private readonly string ServerDirectoryPath = Directory.GetCurrentDirectory() + @"\ServerDirectory";
 
         [OneTimeSetUp]
-        public void Setup()
+        public void SetUp()
         {
-            server = new Server(IPAddress.Loopback, port);
-            _ = Task.Run(async () => await server.Start());
-
             tcpClient = new TcpClient("localhost", port);
             reader = new StreamReader(tcpClient.GetStream());
             writer = new StreamWriter(tcpClient.GetStream()) { AutoFlush = true };
-
-            Directory.CreateDirectory(ServerDirectoryPath);
         }
 
         [TestCase("")]
@@ -43,7 +33,7 @@ namespace Ftp.Tests
         }
 
         [TestCase(@"1 .\Test")]
-        [TestCase(@"1 .\ServerDirectory\Files")]
+        [TestCase(@"1 .\ServerDirectory\NonexistentDirectory")]
         public void NonexistentDirectoryListTest(string request)
         {
             writer.WriteLine(request);
@@ -53,20 +43,8 @@ namespace Ftp.Tests
         [Test]
         public void ListTest()
         {
-            var testDirectory = $@"{ServerDirectoryPath}\ListTest";
-
-            var folderPath1 = $@"{testDirectory}\Folder1";
-            var folderPath2 = $@"{testDirectory}\Folder2";
-            var filePath1 = $@"{testDirectory}\File1.txt";
-            var filePath2 = $@"{testDirectory}\File2.txt";
-
-            Directory.CreateDirectory(folderPath1);
-            Directory.CreateDirectory(folderPath2);
-            File.Create(filePath1).Close();
-            File.Create(filePath2).Close();
-
-            writer.WriteLine($"1 {testDirectory}");
-            var response = (reader.ReadLine()).Split(' ');
+            writer.WriteLine($"1 {ServerSettings.ListTestDir}");
+            var response = reader.ReadLine().Split(' ');
             var actualResponse = new string[]
                 {
                     response[0],
@@ -76,51 +54,49 @@ namespace Ftp.Tests
                     $"{response[7]} {response[8]}",
                 };
 
-            var expectedResponse = new string[]
+            var expected = new string[]
                 {
                     "4",
-                    $"{folderPath1} true",
-                    $"{folderPath2} true",
-                    $"{filePath1} false",
-                    $"{filePath2} false"
+                    $"{ServerSettings.FolderPath1} true",
+                    $"{ServerSettings.FolderPath2} true",
+                    $"{ServerSettings.FilePath1} false",
+                    $"{ServerSettings.FilePath2} false"
                 };
-            CollectionAssert.AreEquivalent(expectedResponse, actualResponse);
-            Directory.Delete(testDirectory, true);
+            CollectionAssert.AreEquivalent(expected, actualResponse);
         }
 
         [Test]
         public void EmptyDirectoryTest()
         {
-            var emptyDirectoryPath = $@"{ServerDirectoryPath}\EmptyDirectory";
-            Directory.CreateDirectory(emptyDirectoryPath);
-
-            writer.WriteLine($"1 {emptyDirectoryPath}");
+            writer.WriteLine($"1 {ServerSettings.EmptyDir}");
             Assert.AreEqual(reader.ReadLine(), "0");
-
-            Directory.Delete(emptyDirectoryPath);
         }
 
         [Test]
         public void GetTest()
         {
-            var testDirectory = $@"{ServerDirectoryPath}\File";
-            Directory.CreateDirectory(testDirectory);
-
-            var filePath = $@"{testDirectory}\file.txt";
-            var textInFile = "Text in the file.";
-            byte[] text = new UTF8Encoding(true).GetBytes(textInFile);
-            using (var fileStream = File.Create(filePath))
-            {
-                fileStream.Write(text);
-            }
-
+            var filePath = ServerSettings.GetTestFilePath;
             writer.WriteLine($"2 {filePath}");
             var response = reader.ReadLine();
 
-            var expectedResponse = $"{text.Length} {textInFile}";
-            Assert.AreEqual(expectedResponse, response);
+            string textInFile;
+            using (var fileReader = new StreamReader(filePath))
+            {
+                textInFile = fileReader.ReadToEnd();
+            }
+            var expectedResponse = $"{new FileInfo(filePath).Length} {textInFile}";
 
-            Directory.Delete(testDirectory, true);
+            Assert.AreEqual(expectedResponse, response);
+        }
+
+        [Test]
+        public void GetNonexistentFileTest()
+        {
+            var filePath = $@"{ServerSettings.ServerDirectory}\NonexistentFile.txt";
+            writer.WriteLine($"2 {filePath}");
+            
+            var response = reader.ReadLine();
+            Assert.AreEqual("-1", response);
         }
 
         [OneTimeTearDown]
@@ -129,7 +105,6 @@ namespace Ftp.Tests
             reader.Dispose();
             writer.Dispose();
             tcpClient.Dispose();
-            Directory.Delete(ServerDirectoryPath, true);
         }
     }
 }
