@@ -109,10 +109,10 @@ namespace FtpClient
 
         public void Dispose()
         {
-            client.Dispose();
-            stream.Dispose();
             writer.Dispose();
             reader.Dispose();
+            stream.Dispose();
+            client.Dispose();
         }
     }
 }

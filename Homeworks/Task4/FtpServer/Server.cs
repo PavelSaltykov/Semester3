@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace FtpServer
+namespace Ftp
 {
     /// <summary>
     /// FTP server processing two requests: 
@@ -21,14 +21,17 @@ namespace FtpServer
         /// </summary>
         /// <param name="localAddr"><see cref="IPAddress"/> that represents the local IP address.</param>
         /// <param name="port">The port on which to listen for incoming connection attempts.</param>
-        public Server(IPAddress localAddr, int port) => listener = new TcpListener(localAddr, port);
+        public Server(IPAddress localAddr, int port)
+        {
+            listener = new TcpListener(localAddr, port);
+            listener.Start();
+        }
 
         /// <summary>
         /// Starts the server.
         /// </summary>
         public async Task Start()
         {
-            listener.Start();
             while (true)
             {
                 var socket = await listener.AcceptSocketAsync();
@@ -112,6 +115,7 @@ namespace FtpServer
             await writer.WriteAsync($"{new FileInfo(path).Length} ");
             using var fileStream = File.OpenRead(path);
             await fileStream.CopyToAsync(writer.BaseStream);
+            await writer.WriteLineAsync();
         }
     }
 }
