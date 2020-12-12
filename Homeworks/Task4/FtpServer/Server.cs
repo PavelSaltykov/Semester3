@@ -36,47 +36,42 @@ namespace FtpServer
             while (true)
             {
                 var socket = await listener.AcceptSocketAsync();
-                var stream = new NetworkStream(socket);
-                try
-                {
-                    _ = Task.Run(async () => await ProcessRequests(stream));
-                }
-                catch
-                {
-                    stream.Close();
-                    socket.Close();
-                }
+                _ = Task.Run(async () => await ProcessRequests(socket));
             }
         }
 
-        private async Task ProcessRequests(NetworkStream stream)
+        private async Task ProcessRequests(Socket socket)
         {
-            using var reader = new StreamReader(stream);
-            using var writer = new StreamWriter(stream) { AutoFlush = true };
-
-            while (true)
+            using (socket)
             {
-                var request = await reader.ReadLineAsync();
+                using var stream = new NetworkStream(socket);
+                using var reader = new StreamReader(stream);
+                using var writer = new StreamWriter(stream) { AutoFlush = true };
 
-                if (!Regex.IsMatch(request, @"^[12]\s.+"))
+                while (true)
                 {
-                    await writer.WriteLineAsync("Incorrect request.");
-                    continue;
-                }
+                    var request = await reader.ReadLineAsync();
 
-                var path = request[2..];
-                switch (request[0])
-                {
-                    case '1':
-                        {
-                            await List(path, writer);
-                            break;
-                        }
-                    case '2':
-                        {
-                            await Get(path, writer);
-                            break;
-                        }
+                    if (!Regex.IsMatch(request, @"^[12]\s.+"))
+                    {
+                        await writer.WriteLineAsync("Incorrect request.");
+                        continue;
+                    }
+
+                    var path = request[2..];
+                    switch (request[0])
+                    {
+                        case '1':
+                            {
+                                await List(path, writer);
+                                break;
+                            }
+                        case '2':
+                            {
+                                await Get(path, writer);
+                                break;
+                            }
+                    }
                 }
             }
         }
