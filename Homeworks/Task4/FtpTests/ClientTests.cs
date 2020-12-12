@@ -49,15 +49,19 @@ namespace Ftp.Tests
             Assert.IsTrue(ex.InnerException is InvalidOperationException);
         }
 
-        [Test]
-        public void GetTest()
+        private static readonly object[] pathsAndNamesForGetTest =
         {
-            var filePath = ServerSettings.GetTestFilePath;
-            var downloadPath = @".\Dowlnoads";
-            var filename = "dowloadedFile.txt";
-            var dowloadedFilePath = $@"{downloadPath}\{filename}";
+            new string[]{ ServerSettings.GetTestFilePath, "dowloadedFile.txt"},
+            new string[]{ ServerSettings.GetTestBigFilePath, "dowloadedBigFile.txt"}
+        };
 
-            client.GetAsync(filePath, downloadPath, filename).Wait();
+        [TestCaseSource(nameof(pathsAndNamesForGetTest))]
+        public void GetTest(string filePath, string downloadedFileName)
+        {
+            var downloadPath = @".\Dowlnoads";
+            var dowloadedFilePath = $@"{downloadPath}\{downloadedFileName}";
+
+            client.GetAsync(filePath, downloadPath, downloadedFileName).Wait();
             Assert.AreEqual(new FileInfo(filePath).Length, new FileInfo(dowloadedFilePath).Length);
 
             string expectedText;

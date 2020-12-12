@@ -30,7 +30,6 @@ namespace FtpClient
             stream = client.GetStream();
             writer = new StreamWriter(stream) { AutoFlush = true };
             reader = new StreamReader(stream);
-
         }
 
         /// <summary>
@@ -95,9 +94,9 @@ namespace FtpClient
             using var fileStream = File.Create(@$"{directoryPath}\{filename}");
 
             const int maxBufferSize = 81920;
+            var buffer = new byte[maxBufferSize];
             while (size > 0)
             {
-                var buffer = new byte[maxBufferSize];
                 var currentBufferSize = size > maxBufferSize ? maxBufferSize : (int)size;
                 await stream.ReadAsync(buffer, 0, currentBufferSize);
                 await fileStream.WriteAsync(buffer, 0, currentBufferSize);

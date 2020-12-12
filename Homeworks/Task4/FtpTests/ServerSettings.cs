@@ -25,6 +25,7 @@ namespace Ftp.Tests
 
         public static readonly string GetTestDir = $@"{ServerDirectory}\GetTest";
         public static readonly string GetTestFilePath = $@"{GetTestDir}\file.txt";
+        public static readonly string GetTestBigFilePath = $@"{GetTestDir}\bigFile.txt";
 
         [OneTimeSetUp]
         public void SetUp()
@@ -39,19 +40,28 @@ namespace Ftp.Tests
             Directory.CreateDirectory(EmptyDir);
 
             Directory.CreateDirectory(GetTestDir);
-            CreateFile();
+            CreateFile("Text in the file.", GetTestFilePath);
+            CreateFile(GetBigText(), GetTestBigFilePath);
 
             server = new Server(IPAddress.Loopback, Port);
             _ = Task.Run(async () => await server.Run());
         }
 
-        private void CreateFile()
+        private void CreateFile(string text, string filePath)
         {
-            var textInFile = "Text in the file.";
-            byte[] text = new UTF8Encoding(true).GetBytes(textInFile);
+            byte[] bytes = new UTF8Encoding(true).GetBytes(text);
+            using var fileStream = File.Create(filePath);
+            fileStream.Write(bytes);
+        }
 
-            using var fileStream = File.Create(GetTestFilePath);
-            fileStream.Write(text);
+        private string GetBigText()
+        {
+            var text = "";
+            for (var i = 0; i < 100000; ++i)
+            {
+                text += "a";
+            }
+            return text;
         }
 
         [OneTimeTearDown]
