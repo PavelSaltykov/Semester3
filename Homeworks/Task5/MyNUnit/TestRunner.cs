@@ -30,14 +30,17 @@ namespace MyNUnit
             if (assemblyFiles.Count() == 0)
                 throw new AssembliesNotFoundException($"Assemblies not found in path: {path}.");
 
-            var classes = assemblyFiles.Select(Assembly.LoadFrom).Distinct()
+            var assemblies = new ConcurrentQueue<Assembly>();
+            Parallel.ForEach(assemblyFiles, x => assemblies.Enqueue(Assembly.LoadFrom(x)));
+
+            var classes = assemblies.Distinct()
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => t.IsClass);
 
-            var classesContaininigTests = classes.Where(c => c.GetMethods()
+            var classesContainingTests = classes.Where(c => c.GetMethods()
                 .Any(mi => mi.GetCustomAttributes().Any(attr => attr is TestAttribute)));
 
-            classTypes = new ConcurrentQueue<Type>(classesContaininigTests);
+            classTypes = new ConcurrentQueue<Type>(classesContainingTests);
         }
 
         /// <summary>
