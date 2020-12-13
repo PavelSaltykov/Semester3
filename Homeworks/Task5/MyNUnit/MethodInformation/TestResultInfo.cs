@@ -8,14 +8,29 @@ namespace MyNUnit.MethodInformation
     /// </summary>
     public class TestResultInfo : Info
     {
+        /// <summary>
+        /// <see langword="true"/> if the test method completed successfully; otherwise, <see langword="false"/>.
+        /// </summary>
         public bool IsPassed { get; }
 
+        /// <summary>
+        /// Type of the expected exception.
+        /// </summary>
         public Type Expected { get; }
 
+        /// <summary>
+        /// Unexpected exception thrown during test method execution.
+        /// </summary>
         public Exception Unexpected { get; }
 
+        /// <summary>
+        /// Method execution time.
+        /// </summary>
         public TimeSpan Time { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestResultInfo"/> class.
+        /// </summary>
         public TestResultInfo(MethodInfo methodInfo, bool isPassed,
             Type expected, Exception unexpected, TimeSpan time)
             : base(methodInfo)

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace MyNUnit
 {
+    /// <summary>
+    /// Diagnoses errors in the test classes.
+    /// </summary>
     public static class TestErrorFinder
     {
         private static IEnumerable<MethodInfo> GetMethodsWithAttribute(Type classType, Type attributeType)
@@ -17,6 +20,11 @@ namespace MyNUnit
                 .Where(mi => mi.GetCustomAttributes().Any(attr => attr.GetType() == attributeType));
         }
 
+        /// <summary>
+        /// Finds errors in the specified test class.
+        /// </summary>
+        /// <param name="classType">Test class type.</param>
+        /// <returns>Info about errors.</returns>
         public static IEnumerable<IncorrectMethodInfo> FindErrorsInClass(Type classType)
         {
             var beforeClassMethods = GetMethodsWithAttribute(classType, typeof(BeforeClassAttribute));

@@ -21,9 +21,9 @@ namespace MyNUnit
             throw new ArgumentNullException(nameof(writer));
 
         /// <summary>
-        /// Prints information about tests to the output stream.
+        /// Prints information about tests or errors to the output stream.
         /// </summary>
-        /// <param name="testsInfo">Collection of tests information.</param>
+        /// <param name="testsInfo">Collection of tests or error information.</param>
         public void Write(IEnumerable<Info> testsInfo)
         {
             if (testsInfo == null)

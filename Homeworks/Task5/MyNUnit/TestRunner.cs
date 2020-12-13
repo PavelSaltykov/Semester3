@@ -23,7 +23,8 @@ namespace MyNUnit
         private readonly ConcurrentQueue<IncorrectMethodInfo> errorsInfo = new ConcurrentQueue<IncorrectMethodInfo>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TestRunner"/> class.
+        /// Initializes a new instance of the <see cref="TestRunner"/> class and
+        /// finds errors in test classes.
         /// </summary>
         /// <param name="path">Path to assemblies.</param>
         public TestRunner(string path)
@@ -143,6 +144,9 @@ namespace MyNUnit
         /// </summary>
         public IEnumerable<Info> GetTestsInfo() => testsInfo;
 
+        /// <summary>
+        /// Returns the information about errors in test classes.
+        /// </summary>
         public IEnumerable<IncorrectMethodInfo> GetErrorsInfo() => errorsInfo;
     }
 }

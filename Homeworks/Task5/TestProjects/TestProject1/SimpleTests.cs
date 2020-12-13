@@ -8,8 +8,8 @@ namespace TestProject1
     public class SimpleTests
     {
         [Test(Ignore = "ignore")]
-        public void IgnoredTest() 
-        { 
+        public void IgnoredTest()
+        {
         }
 
         public void WithoutAttributeTest()

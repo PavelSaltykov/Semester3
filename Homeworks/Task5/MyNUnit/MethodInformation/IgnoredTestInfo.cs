@@ -7,8 +7,15 @@ namespace MyNUnit.MethodInformation
     /// </summary>
     public class IgnoredTestInfo : Info
     {
+        /// <summary>
+        /// Reason to ignore method execution.
+        /// </summary>
         public string Message { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IgnoredTestInfo"/> class.
+        /// </summary>
+        /// <param name="message">Reason to ignore.</param>
         public IgnoredTestInfo(MethodInfo methodInfo, string message)
             : base(methodInfo) => Message = message;
 
