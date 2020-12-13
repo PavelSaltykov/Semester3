@@ -1,4 +1,6 @@
-﻿namespace MyNUnit.TestInformation
+﻿using System.Reflection;
+
+namespace MyNUnit.TestInformation
 {
     /// <summary>
     /// Reresents information about test method.
@@ -11,11 +13,11 @@
 
         public string MethodName { get; }
 
-        public TestInfo(string assemblyName, string className, string methodName)
+        public TestInfo(MethodInfo methodInfo)
         {
-            AssemblyName = assemblyName;
-            ClassName = className;
-            MethodName = methodName;
+            AssemblyName = methodInfo.DeclaringType.Assembly.GetName().Name;
+            ClassName = methodInfo.DeclaringType.Name;
+            MethodName = methodInfo.Name;
         }
 
         public override string ToString() => MethodName;

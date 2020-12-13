@@ -1,4 +1,6 @@
-﻿namespace MyNUnit.TestInformation
+﻿using System.Reflection;
+
+namespace MyNUnit.TestInformation
 {
     /// <summary>
     /// Reresents information about ignored test method.
@@ -7,8 +9,8 @@
     {
         public string Message { get; }
 
-        public IgnoredTestInfo(string assemblyName, string className, string methodName, string message)
-            : base(assemblyName, className, methodName)
+        public IgnoredTestInfo(MethodInfo methodInfo, string message)
+            : base(methodInfo)
         {
             Message = message;
         }

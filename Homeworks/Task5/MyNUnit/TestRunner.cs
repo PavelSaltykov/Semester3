@@ -92,14 +92,10 @@ namespace MyNUnit
 
         private void ExecuteTest(MethodInfo method, object instance)
         {
-            var assemblyName = method.DeclaringType.Assembly.GetName().Name;
-            var className = method.DeclaringType.Name;
-            var methodName = method.Name;
-
             var attribute = (TestAttribute)method.GetCustomAttribute(typeof(TestAttribute));
             if (attribute.Ignore != null)
             {
-                var testInfo = new IgnoredTestInfo(assemblyName, className, methodName, attribute.Ignore);
+                var testInfo = new IgnoredTestInfo(method, attribute.Ignore);
                 testsInfo.Enqueue(testInfo);
                 return;
             }
@@ -121,8 +117,8 @@ namespace MyNUnit
             finally
             {
                 stopwatch.Stop();
-                var testInfo = new TestResultInfo(assemblyName, className, methodName,
-                    isPassed, attribute.Expected, unexpected, stopwatch.Elapsed);
+                var time = stopwatch.Elapsed;
+                var testInfo = new TestResultInfo(method, isPassed, attribute.Expected, unexpected, time);
                 testsInfo.Enqueue(testInfo);
             }
         }

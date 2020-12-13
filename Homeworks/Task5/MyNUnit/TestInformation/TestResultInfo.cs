@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace MyNUnit.TestInformation
 {
@@ -15,12 +16,12 @@ namespace MyNUnit.TestInformation
 
         public TimeSpan Time { get; }
 
-        public TestResultInfo(string assemblyName, string className, string methodName,
-            bool isPassed, Type expectedException, Exception unexpected, TimeSpan time)
-            : base(assemblyName, className, methodName)
+        public TestResultInfo(MethodInfo methodInfo, bool isPassed,
+            Type expected, Exception unexpected, TimeSpan time)
+            : base(methodInfo)
         {
             IsPassed = isPassed;
-            Expected = expectedException;
+            Expected = expected;
             Unexpected = unexpected;
             Time = time;
         }

@@ -9,7 +9,7 @@ namespace MyNUnit.Tests
     [TestFixture]
     public class TestRunnerTests
     {
-        IEnumerable<TestInfo> simpleTestsInfo;
+        private IEnumerable<TestInfo> simpleTestsInfo;
 
         [OneTimeSetUp]
         public void GetSimpleTestsInfo()
