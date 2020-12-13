@@ -70,14 +70,13 @@ namespace MyNUnit
 
         private void ExecuteTestMethods(Type classType)
         {
-            var instance = Activator.CreateInstance(classType);
-
             var beforeMethods = GetMethodsWithAttribute(classType, typeof(BeforeAttribute));
             var afterMethods = GetMethodsWithAttribute(classType, typeof(AfterAttribute));
 
             var testMethods = GetMethodsWithAttribute(classType, typeof(TestAttribute));
-            foreach (var test in testMethods)
+            Parallel.ForEach(testMethods, test =>
             {
+                var instance = Activator.CreateInstance(classType);
                 foreach (var method in beforeMethods)
                 {
                     method.Invoke(instance, null);
@@ -87,7 +86,7 @@ namespace MyNUnit
                 {
                     method.Invoke(instance, null);
                 }
-            }
+            });
         }
 
         private void ExecuteTest(MethodInfo method, object instance)
@@ -102,7 +101,7 @@ namespace MyNUnit
 
             var isPassed = false;
             Exception unexpected = null;
-            var stopwatch = Stopwatch.StartNew();
+            var stopwatch = new Stopwatch();
             try
             {
                 stopwatch.Start();

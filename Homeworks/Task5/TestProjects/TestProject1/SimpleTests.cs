@@ -1,6 +1,7 @@
 ﻿using Attributes;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace TestProject1
 {
@@ -16,6 +17,7 @@ namespace TestProject1
         [Test]
         public void Test()
         {
+            Thread.Sleep(10);
         }
 
         [Test(Expected = typeof(IndexOutOfRangeException))]

@@ -7,13 +7,12 @@ namespace MyNUnit
     {
         public static int Main(string[] args)
         {
+            Console.WindowWidth = Console.LargestWindowWidth - 10;
             if (args.Length != 1)
             {
                 Console.WriteLine("Please enter the path to assemblies.");
                 return 1;
             }
-
-            Console.WindowWidth = Console.LargestWindowWidth - 10;
 
             var path = args[0];
             Console.WriteLine($"Path: {path}");
