@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Task5
+namespace MyNUnit
 {
     /// <summary>
     /// The exception that is thrown when assembly files were not found.

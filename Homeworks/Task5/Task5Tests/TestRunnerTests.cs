@@ -1,10 +1,10 @@
-﻿using NUnit.Framework;
+﻿using MyNUnit.TestInformation;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Task5.TestInformation;
 
-namespace Task5.Tests
+namespace MyNUnit.Tests
 {
     [TestFixture]
     public class TestRunnerTests

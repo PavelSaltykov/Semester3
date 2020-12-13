@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Task5.TestInformation
+namespace MyNUnit.TestInformation
 {
     /// <summary>
     /// Reresents information about executed test method.

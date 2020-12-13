@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Task5.Attributes
+namespace Attributes
 {
     /// <summary>
     /// Marks the method as callable from the test runner.

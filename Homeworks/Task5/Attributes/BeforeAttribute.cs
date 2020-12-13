@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Task5.Attributes
+namespace Attributes
 {
     /// <summary>
     /// Identifies a method to be called before each test is run.

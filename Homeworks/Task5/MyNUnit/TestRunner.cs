@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Attributes;
+using MyNUnit.TestInformation;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,10 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Task5.Attributes;
-using Task5.TestInformation;
 
-namespace Task5
+namespace MyNUnit
 {
     /// <summary>
     /// Allows to run tests from assemblies.

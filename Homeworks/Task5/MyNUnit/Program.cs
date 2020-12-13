@@ -1,17 +1,19 @@
 ﻿using System;
 using System.IO;
 
-namespace Task5
+namespace MyNUnit
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length != 1)
             {
-                Console.WriteLine("Incorrect application arguments.");
-                return;
+                Console.WriteLine("Please enter the path to assemblies.");
+                return 1;
             }
+
+            Console.WindowWidth = Console.LargestWindowWidth - 10;
 
             var path = args[0];
             Console.WriteLine($"Path: {path}");
@@ -23,14 +25,16 @@ namespace Task5
                 testRunner.Run();
 
                 using var rw = new ReportWriter(Console.Out);
-                Console.WriteLine("Report:");
+                Console.WriteLine("\tREPORT:");
                 Console.WriteLine();
                 rw.Write(testRunner.GetTestsInfo());
+                return 0;
             }
             catch (Exception e) when
                 (e is IOException || e is InvalidOperationException || e is AssembliesNotFoundException)
             {
                 Console.WriteLine($"{e.GetType()}: {e.Message}");
+                return 1;
             }
         }
     }

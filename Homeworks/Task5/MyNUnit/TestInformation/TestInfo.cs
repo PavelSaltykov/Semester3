@@ -1,4 +1,4 @@
-﻿namespace Task5.TestInformation
+﻿namespace MyNUnit.TestInformation
 {
     /// <summary>
     /// Reresents information about test method.

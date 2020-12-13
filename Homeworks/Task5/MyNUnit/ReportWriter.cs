@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MyNUnit.TestInformation;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Task5.TestInformation;
 
-namespace Task5
+namespace MyNUnit
 {
     /// <summary>
     /// Provides output of the report to the output stream.

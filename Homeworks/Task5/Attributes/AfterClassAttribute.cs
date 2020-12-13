@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Task5.Attributes
+namespace Attributes
 {
     /// <summary>
     /// Identifies a static method to be called once after all tests have run.
