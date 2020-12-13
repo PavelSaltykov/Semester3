@@ -1,4 +1,4 @@
-﻿using MyNUnit.TestInformation;
+﻿using MyNUnit.MethodInformation;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ namespace MyNUnit.Tests
     [TestFixture]
     public class TestRunnerTests
     {
-        private IEnumerable<TestInfo> simpleTestsInfo;
+        private IEnumerable<Info> simpleTestsInfo;
 
         [OneTimeSetUp]
         public void GetSimpleTestsInfo()

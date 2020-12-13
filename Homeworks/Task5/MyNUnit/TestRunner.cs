@@ -1,5 +1,5 @@
 ﻿using Attributes;
-using MyNUnit.TestInformation;
+using MyNUnit.MethodInformation;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,9 +16,11 @@ namespace MyNUnit
     /// </summary>
     public class TestRunner
     {
-        private readonly ConcurrentQueue<TestInfo> testsInfo = new ConcurrentQueue<TestInfo>();
+        private readonly ConcurrentQueue<Info> testsInfo = new ConcurrentQueue<Info>();
 
         private readonly ConcurrentQueue<Type> classTypes;
+
+        private readonly ConcurrentQueue<IncorrectMethodInfo> errorsInfo = new ConcurrentQueue<IncorrectMethodInfo>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestRunner"/> class.
@@ -37,10 +39,22 @@ namespace MyNUnit
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => t.IsClass);
 
-            var classesContainingTests = classes.Where(c => c.GetMethods()
-                .Any(mi => mi.GetCustomAttributes().Any(attr => attr is TestAttribute)));
-
-            classTypes = new ConcurrentQueue<Type>(classesContainingTests);
+            var classesWithoutErrors = new ConcurrentQueue<Type>();
+            Parallel.ForEach(classes, testClass =>
+            {
+                var errors = TestErrorFinder.FindErrorsInClass(testClass);
+                foreach (var info in errors)
+                {
+                    errorsInfo.Enqueue(info);
+                }
+                var containsTests = testClass.GetMethods().Any(mi => mi.GetCustomAttributes()
+                    .Any(attr => attr is TestAttribute));
+                if (errors.Count() == 0 && containsTests)
+                {
+                    classesWithoutErrors.Enqueue(testClass);
+                }
+            });
+            classTypes = new ConcurrentQueue<Type>(classesWithoutErrors);
         }
 
         /// <summary>
@@ -58,12 +72,8 @@ namespace MyNUnit
         private void ExecuteStaticMethods(Type classType, Type attributeType)
         {
             var methods = GetMethodsWithAttribute(classType, attributeType);
-
             foreach (var method in methods)
             {
-                if (!method.IsStatic)
-                    throw new InvalidOperationException($"{method} must be static.");
-
                 method.Invoke(null, null);
             }
         }
@@ -131,6 +141,8 @@ namespace MyNUnit
         /// <summary>
         /// Returns the information about tests.
         /// </summary>
-        public IEnumerable<TestInfo> GetTestsInfo() => testsInfo;
+        public IEnumerable<Info> GetTestsInfo() => testsInfo;
+
+        public IEnumerable<IncorrectMethodInfo> GetErrorsInfo() => errorsInfo;
     }
 }

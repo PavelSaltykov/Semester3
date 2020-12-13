@@ -1,4 +1,4 @@
-﻿using MyNUnit.TestInformation;
+﻿using MyNUnit.MethodInformation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,7 +24,7 @@ namespace MyNUnit
         /// Prints information about tests to the output stream.
         /// </summary>
         /// <param name="testsInfo">Collection of tests information.</param>
-        public void Write(IEnumerable<TestInfo> testsInfo)
+        public void Write(IEnumerable<Info> testsInfo)
         {
             if (testsInfo == null)
                 throw new ArgumentNullException(nameof(testsInfo));
@@ -43,7 +43,7 @@ namespace MyNUnit
             }
         }
 
-        private void WriteGroupByAssembly(IGrouping<string, TestInfo> groupByAssembly)
+        private void WriteGroupByAssembly(IGrouping<string, Info> groupByAssembly)
         {
             var groupsByClass = groupByAssembly.GroupBy(info => info.ClassName);
 
@@ -58,13 +58,13 @@ namespace MyNUnit
             }
         }
 
-        private char Symbol(TestInfo info)
+        private char Symbol(Info info)
         {
             if (info is TestResultInfo)
             {
                 return (info as TestResultInfo).IsPassed ? '+' : '-';
             }
-            return '?';
+            return info is IncorrectMethodInfo ? '!' : '?';
         }
 
         public void Dispose() => writer.Dispose();

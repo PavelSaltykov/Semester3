@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Reflection;
 
-namespace MyNUnit.TestInformation
+namespace MyNUnit.MethodInformation
 {
     /// <summary>
     /// Reresents information about executed test method.
     /// </summary>
-    public class TestResultInfo : TestInfo
+    public class TestResultInfo : Info
     {
         public bool IsPassed { get; }
 

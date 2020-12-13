@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 
 namespace MyNUnit
 {
@@ -21,16 +22,35 @@ namespace MyNUnit
             try
             {
                 var testRunner = new TestRunner(path);
-                testRunner.Run();
 
                 using var rw = new ReportWriter(Console.Out);
-                Console.WriteLine("\tREPORT:");
+                Console.WriteLine("\t\tREPORT:");
                 Console.WriteLine();
-                rw.Write(testRunner.GetTestsInfo());
+
+                var errors = testRunner.GetErrorsInfo();
+                if (errors.Count() > 0)
+                {
+                    Console.WriteLine("  Classes with incorrect methods:");
+                    rw.Write(errors);
+                }
+
+                testRunner.Run();
+                var results = testRunner.GetTestsInfo();
+                if (errors.Count() + results.Count() == 0)
+                {
+                    Console.WriteLine("Test classes not found.");
+                    return 0;
+                }
+
+                if (results.Count() > 0)
+                {
+                    Console.WriteLine("  Results:");
+                    rw.Write(results);
+                }
                 return 0;
             }
             catch (Exception e) when
-                (e is IOException || e is InvalidOperationException || e is AssembliesNotFoundException)
+                (e is IOException || e is AssembliesNotFoundException)
             {
                 Console.WriteLine($"{e.GetType()}: {e.Message}");
                 return 1;
