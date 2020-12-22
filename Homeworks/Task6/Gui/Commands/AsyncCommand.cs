@@ -1,23 +1,32 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Gui.Commands
 {
-    public class ConnectCommand : AsyncCommandBase
+    public class AsyncCommand : ICommand
     {
         private readonly Func<Task> execute;
         private readonly Func<bool> canExecute;
         private bool isExecuting;
 
-        public ConnectCommand(Func<Task> executeAsync, Func<bool> canExecute)
+        public AsyncCommand(Func<Task> executeAsync, Func<bool> canExecute)
         {
             execute = executeAsync;
             this.canExecute = canExecute;
         }
 
-        public override bool CanExecute(object parameter = null) => !isExecuting && canExecute();
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
 
-        public override async Task ExecuteAsync(object parameter = null)
+        public bool CanExecute(object parameter = null) => !isExecuting && canExecute();
+
+        public async void Execute(object parameter = null) => await ExecuteAsync();
+
+        public async Task ExecuteAsync()
         {
             if (isExecuting)
                 return;

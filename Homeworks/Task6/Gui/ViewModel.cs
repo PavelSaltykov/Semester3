@@ -1,9 +1,9 @@
 ﻿using FtpClient;
 using Gui.Commands;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -22,9 +22,8 @@ namespace Gui
 
         public ViewModel()
         {
-            ConnectCommand = new ConnectCommand(Connect, () => client == null);
-            NavigateToFolderCommand = new ListItemCommand(async i =>
-                await NavigateToSelectedFolder(FilesAndFolders[i].Path), i => FilesAndFolders[i].IsDir);
+            ConnectCommand = new AsyncCommand(Connect, () => client == null);
+            NavigateToFolderCommand = new AsyncCommand(NavigateToSelectedFolder, () => SelectedServerItem.IsDir);
         }
 
         public string Ip
@@ -53,14 +52,14 @@ namespace Gui
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public ConnectCommand ConnectCommand { get; }
+        public AsyncCommand ConnectCommand { get; }
 
         private async Task Connect()
         {
             try
             {
                 client = new Client(ip, port);
-                await NavigateToSelectedFolder(rootFolder);
+                await NavigateToSelectedFolder();
             }
             catch (SocketException e)
             {
@@ -68,27 +67,52 @@ namespace Gui
             }
         }
 
+        private FileSystemEntry selectedServerItem;
+        public FileSystemEntry SelectedServerItem
+        {
+            get => selectedServerItem ??= new FileSystemEntry("", rootFolder, true);
+            set
+            {
+                selectedServerItem = value;
+                OnPropertyChanged(nameof(SelectedServerItem));
+            }
+        }
+
         private const string rootFolder = ".";
         public ObservableCollection<FileSystemEntry> FilesAndFolders { get; } = new ObservableCollection<FileSystemEntry>();
 
-        public ListItemCommand NavigateToFolderCommand { get; }
+        public AsyncCommand NavigateToFolderCommand { get; }
 
-        private async Task NavigateToSelectedFolder(string selectedFolder)
+        private async Task NavigateToSelectedFolder()
         {
-            var entries = await client.ListAsync(selectedFolder);
-
-            FilesAndFolders.Clear();
-            if (selectedFolder != rootFolder)
+            try
             {
-                var parentFolder = selectedFolder.Remove(selectedFolder.LastIndexOf('\\'));
-                FilesAndFolders.Add(new FileSystemEntry("..", parentFolder, true));
+                string selectedFolder = SelectedServerItem.Path;
+                var entries = await client.ListAsync(selectedFolder);
+
+                FilesAndFolders.Clear();
+                if (selectedFolder != rootFolder)
+                {
+                    var index = selectedFolder.LastIndexOf('\\');
+                    var parentFolder = index > 0 ? selectedFolder.Remove(index) : rootFolder;
+                    FilesAndFolders.Add(new FileSystemEntry("..", parentFolder, true));
+                }
+
+                foreach (var item in entries)
+                {
+                    FilesAndFolders.Add(item);
+                }
             }
-
-            foreach (var item in entries)
+            catch (IOException e)
             {
-                FilesAndFolders.Add(item);
+                MessageBox.Show(e.Message);
+                FilesAndFolders.Clear();
+                client.Dispose();
+                client = null;
             }
         }
+
+
 
         public void Dispose() => client?.Dispose();
     }

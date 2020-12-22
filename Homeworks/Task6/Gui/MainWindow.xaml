@@ -79,15 +79,15 @@
                     <Button Grid.Column="3" Content="Download all"/>
                 </Grid>
 
-                <ListBox x:Name="listBox" Grid.Row="1" ItemsSource="{Binding FilesAndFolders}">
+                <ListBox x:Name="listBox" Grid.Row="1" ItemsSource="{Binding FilesAndFolders}" 
+                         SelectedItem="{Binding Path=SelectedServerItem, Mode=OneWayToSource}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid Width="{Binding ElementName=listBox, Path=ActualWidth}">
                                 <Grid.InputBindings>
                                     <MouseBinding MouseAction="LeftDoubleClick"
                                         Command="{Binding DataContext.NavigateToFolderCommand,
-                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                        CommandParameter="{Binding ElementName=listBox, Path=SelectedIndex}"/>
+                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
                                 </Grid.InputBindings>
                                 <TextBlock Text="{Binding Name}" FontSize="18"/>
                             </Grid>

@@ -27,11 +27,12 @@ namespace FtpServer
                 return 1;
             }
 
-            Directory.CreateDirectory(@".\Folder");
-            Directory.CreateDirectory(@".\Folder\Subfolder");
-            File.Create(@".\Test\file.txt");
-
             var server = new Server(ip, port);
+
+            Directory.CreateDirectory(@$"{server.RootDirectory}\Folder");
+            Directory.CreateDirectory(@$"{server.RootDirectory}\Folder\Subfolder");
+            File.Create(@$"{server.RootDirectory}\Folder\file.txt");
+
             await server.Run();
             return 0;
         }

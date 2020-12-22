@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace FtpClient
 {
@@ -56,7 +56,7 @@ namespace FtpClient
             {
                 var entryPath = splittedResponse[i * 2 + 1];
                 var isDir = bool.Parse(splittedResponse[i * 2 + 2]);
-                var name = entryPath.Split('\\', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                var name = entryPath.Split('\\').LastOrDefault();
                 result.Add(new FileSystemEntry(name, entryPath, isDir));
             }
             return result;
