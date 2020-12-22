@@ -69,7 +69,7 @@ namespace FtpClient
         /// <param name="path">Path to file relative to where the server is running.</param>
         /// <param name="destinationPath">Path to download folder relative to where the client is running.</param>
         /// <param name="filename">Name of downloaded file.</param>
-        public async Task GetAsync(string path, string destinationPath, string filename)
+        public async Task<Stream> GetAsync(string path)
         {
             await writer.WriteLineAsync($"2 {path}");
 
@@ -85,7 +85,9 @@ namespace FtpClient
                 await reader.ReadAsync(size, index, 1);
             }
 
-            await Download(long.Parse(size), destinationPath, filename);
+            var destination = new MemoryStream();
+            await stream.CopyToAsync(destination);
+            return destination;
         }
 
         private async Task Download(long size, string destinationPath, string filename)

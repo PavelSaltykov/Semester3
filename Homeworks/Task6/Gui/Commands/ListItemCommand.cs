@@ -3,21 +3,21 @@ using System.Threading.Tasks;
 
 namespace Gui.Commands
 {
-    public class ConnectCommand : AsyncCommandBase
+    public class ListItemCommand : AsyncCommandBase
     {
-        private readonly Func<Task> execute;
-        private readonly Func<bool> canExecute;
+        private readonly Func<int, Task> execute;
+        private readonly Func<int, bool> canExecute;
         private bool isExecuting;
 
-        public ConnectCommand(Func<Task> executeAsync, Func<bool> canExecute)
+        public ListItemCommand(Func<int,Task> executeAsync, Func<int,bool> canExecute)
         {
             execute = executeAsync;
             this.canExecute = canExecute;
         }
 
-        public override bool CanExecute(object parameter = null) => !isExecuting && canExecute();
+        public override bool CanExecute(object index = null) => !isExecuting && canExecute((int)index);
 
-        public override async Task ExecuteAsync(object parameter = null)
+        public override async Task ExecuteAsync(object index)
         {
             if (isExecuting)
                 return;
@@ -25,7 +25,7 @@ namespace Gui.Commands
             try
             {
                 isExecuting = true;
-                await execute();
+                await execute((int)index);
             }
             finally
             {

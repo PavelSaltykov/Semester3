@@ -14,15 +14,16 @@
     <Window.Resources>
         <Style TargetType="Button">
             <Setter Property="Background" Value="White" />
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontSize" Value="15"/>
         </Style>
         <Style TargetType="Label">
-            <Setter Property="FontSize" Value="15"></Setter>
-            <Setter Property="HorizontalAlignment" Value="Right"></Setter>
-            <Setter Property="VerticalAlignment" Value="Center"></Setter>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style TargetType="TextBox">
-            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
     </Window.Resources>
 
@@ -61,24 +62,35 @@
 
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="0.15*"/>
+                    <RowDefinition Height="0.12*"/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.3*"/>
                         <ColumnDefinition/>
+                        <ColumnDefinition Width="0.3*"/>
                         <ColumnDefinition/>
-                        <ColumnDefinition/>
+                        <ColumnDefinition Width="0.3*"/>
                     </Grid.ColumnDefinitions>
                     
-                    
+                    <Button Grid.Column="1" Content="Download"/>
+                    <Button Grid.Column="3" Content="Download all"/>
                 </Grid>
-                
-                <ListBox Grid.Row="1" ItemsSource="{Binding FilesAndFoldersOnServer}">
+
+                <ListBox x:Name="listBox" Grid.Row="1" ItemsSource="{Binding FilesAndFolders}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Label Content="{Binding Name}"/>
+                            <Grid Width="{Binding ElementName=listBox, Path=ActualWidth}">
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick"
+                                        Command="{Binding DataContext.NavigateToFolderCommand,
+                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                        CommandParameter="{Binding ElementName=listBox, Path=SelectedIndex}"/>
+                                </Grid.InputBindings>
+                                <TextBlock Text="{Binding Name}" FontSize="18"/>
+                            </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

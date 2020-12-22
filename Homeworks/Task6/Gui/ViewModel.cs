@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -24,6 +23,8 @@ namespace Gui
         public ViewModel()
         {
             ConnectCommand = new ConnectCommand(Connect, () => client == null);
+            NavigateToFolderCommand = new ListItemCommand(async i =>
+                await NavigateToSelectedFolder(FilesAndFolders[i].Path), i => FilesAndFolders[i].IsDir);
         }
 
         public string Ip
@@ -59,12 +60,7 @@ namespace Gui
             try
             {
                 client = new Client(ip, port);
-                currentServerFolder = @".\";
-                var entries = await client.ListAsync(currentServerFolder);
-                foreach(var item in entries)
-                {
-                    FilesAndFoldersOnServer.Add(item);
-                }
+                await NavigateToSelectedFolder(rootFolder);
             }
             catch (SocketException e)
             {
@@ -72,8 +68,27 @@ namespace Gui
             }
         }
 
-        public ObservableCollection<FileSystemEntry> FilesAndFoldersOnServer { get; } = new ObservableCollection<FileSystemEntry>();
-        private string currentServerFolder;
+        private const string rootFolder = ".";
+        public ObservableCollection<FileSystemEntry> FilesAndFolders { get; } = new ObservableCollection<FileSystemEntry>();
+
+        public ListItemCommand NavigateToFolderCommand { get; }
+
+        private async Task NavigateToSelectedFolder(string selectedFolder)
+        {
+            var entries = await client.ListAsync(selectedFolder);
+
+            FilesAndFolders.Clear();
+            if (selectedFolder != rootFolder)
+            {
+                var parentFolder = selectedFolder.Remove(selectedFolder.LastIndexOf('\\'));
+                FilesAndFolders.Add(new FileSystemEntry("..", parentFolder, true));
+            }
+
+            foreach (var item in entries)
+            {
+                FilesAndFolders.Add(item);
+            }
+        }
 
         public void Dispose() => client?.Dispose();
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -25,6 +26,10 @@ namespace FtpServer
                 Console.WriteLine("Incorrect port.");
                 return 1;
             }
+
+            Directory.CreateDirectory(@".\Folder");
+            Directory.CreateDirectory(@".\Folder\Subfolder");
+            File.Create(@".\Test\file.txt");
 
             var server = new Server(ip, port);
             await server.Run();
