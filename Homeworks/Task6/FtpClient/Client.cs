@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace FtpClient
 {
@@ -37,7 +38,7 @@ namespace FtpClient
         /// </summary>
         /// <param name="path">Path to directory relative to where the server is running.</param>
         /// <returns>Names of folders and files in the directory on the server.</returns>
-        public async Task<IEnumerable<(string name, bool isDir)>> ListAsync(string path)
+        public async Task<IEnumerable<FileSystemEntry>> ListAsync(string path)
         {
             await writer.WriteLineAsync($"1 {path}");
             var response = await reader.ReadLineAsync();
@@ -50,10 +51,13 @@ namespace FtpClient
             if (splittedResponse.Length != 1 + size * 2)
                 throw new InvalidOperationException("Incorrect response.");
 
-            var result = new List<(string, bool)>();
+            var result = new List<FileSystemEntry>();
             for (var i = 0; i < size; ++i)
             {
-                result.Add((splittedResponse[i * 2 + 1], bool.Parse(splittedResponse[i * 2 + 2])));
+                var entryPath = splittedResponse[i * 2 + 1];
+                var isDir = bool.Parse(splittedResponse[i * 2 + 2]);
+                var name = entryPath.Split('\\', StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+                result.Add(new FileSystemEntry(name, entryPath, isDir));
             }
             return result;
         }

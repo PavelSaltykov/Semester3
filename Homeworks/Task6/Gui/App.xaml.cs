@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace GuiClient
+namespace Gui
 {
     /// <summary>
     /// Interaction logic for App.xaml
