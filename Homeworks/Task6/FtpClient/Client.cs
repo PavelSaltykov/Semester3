@@ -69,7 +69,7 @@ namespace FtpClient
         /// <param name="path">Path to file relative to where the server is running.</param>
         /// <param name="destinationPath">Path to download folder relative to where the client is running.</param>
         /// <param name="filename">Name of downloaded file.</param>
-        public async Task<Stream> GetAsync(string path)
+        public async Task<(Stream, long)> GetAsync(string path)
         {
             await writer.WriteLineAsync($"2 {path}");
 
@@ -87,28 +87,8 @@ namespace FtpClient
 
             var destination = new MemoryStream();
             await stream.CopyToAsync(destination);
-            return destination;
-        }
-
-        private async Task Download(long size, string destinationPath, string filename)
-        {
-            if (Path.GetFileName(filename) == string.Empty)
-                throw new InvalidOperationException($"Incorrect filename: {filename}.");
-
-            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{destinationPath}";
-            Directory.CreateDirectory(directoryPath);
-            using var fileStream = File.Create(@$"{directoryPath}\{filename}");
-
-            const int maxBufferSize = 81920;
-            var buffer = new byte[maxBufferSize];
-            while (size > 0)
-            {
-                var currentBufferSize = size > maxBufferSize ? maxBufferSize : (int)size;
-                await stream.ReadAsync(buffer, 0, currentBufferSize);
-                await fileStream.WriteAsync(buffer, 0, currentBufferSize);
-                size -= maxBufferSize;
-            }
             await reader.ReadLineAsync();
+            return (destination, long.Parse(size));
         }
 
         public void Dispose()

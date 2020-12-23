@@ -31,7 +31,8 @@ namespace FtpServer
 
             Directory.CreateDirectory(@$"{server.RootDirectory}\Folder");
             Directory.CreateDirectory(@$"{server.RootDirectory}\Folder\Subfolder");
-            File.Create(@$"{server.RootDirectory}\Folder\file.txt");
+            File.Create(@$"{server.RootDirectory}\Folder\file1.txt").Close();
+            File.Create(@$"{server.RootDirectory}\Folder\file2.txt").Close();
 
             await server.Run();
             return 0;
