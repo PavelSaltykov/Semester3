@@ -69,7 +69,7 @@ namespace FtpClient
         /// <param name="path">Path to file relative to where the server is running.</param>
         /// <param name="destinationPath">Path to download folder relative to where the client is running.</param>
         /// <param name="filename">Name of downloaded file.</param>
-        public async Task<(Stream, long)> GetAsync(string path)
+        public async Task GetAsync(string path, string destinationPath,string filename, Action<double> updatePercentage = null)
         {
             await writer.WriteLineAsync($"2 {path}");
 
@@ -85,10 +85,32 @@ namespace FtpClient
                 await reader.ReadAsync(size, index, 1);
             }
 
-            var destination = new MemoryStream();
-            await stream.CopyToAsync(destination);
-            await reader.ReadLineAsync();
-            return (destination, long.Parse(size));
+            await Download(long.Parse(size), destinationPath, filename, updatePercentage);
+        }
+
+        private async Task Download(long size, string path, string filename, Action<double> updatePercentage)
+        {
+            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{path}";
+            using var fileStream = File.Create(@$"{directoryPath}\{filename}");
+
+            const int maxBufferSize = 81920;
+            var buffer = new byte[maxBufferSize];
+
+            var needToDownload = size;
+            var increaseInPercentage = size != 0 ? (float)maxBufferSize / size * 100 : 100;
+            float percentage = 0;
+            while (needToDownload > 0)
+            {
+                var currentBufferSize = needToDownload > maxBufferSize ? maxBufferSize : (int)needToDownload;
+                await stream.ReadAsync(buffer, 0, currentBufferSize);
+                await fileStream.WriteAsync(buffer, 0, currentBufferSize);
+
+                percentage += increaseInPercentage;
+                percentage = percentage < 100 ? percentage : 100;
+                updatePercentage?.Invoke(percentage);
+                needToDownload -= maxBufferSize;
+            }
+            updatePercentage?.Invoke(100);
         }
 
         public void Dispose()

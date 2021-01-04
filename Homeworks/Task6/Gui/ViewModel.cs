@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -23,29 +22,40 @@ namespace Gui
         {
             ConnectCommand = new AsyncCommand(Connect, () => IsDisconnected);
             NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, () => SelectedServerItem.IsDir);
-            DownloadCommand = new AsyncCommand(async () =>
-                {
-                    filesToDownload.Add(SelectedServerItem.Path);
-                    await DownloadSelectedFiles();
-                }, () => SelectedServerItem != null && !SelectedServerItem.IsDir);
+            DownloadCommand = new Command(() =>
+               {
+                   filesToDownload.Add(SelectedServerItem);
+                   DownloadSelectedFiles();
+               }, () => SelectedServerItem != null && !SelectedServerItem.IsDir);
 
-            DownloadAllCommand = new AsyncCommand(async () =>
-                {
-                    foreach (var item in FilesAndFolders)
-                    {
-                        if (!item.IsDir)
-                        {
-                            filesToDownload.Add(item.Path);
-                        }
-                    }
-                    await DownloadSelectedFiles();
-                }, () => FilesAndFolders.Any(item => !item.IsDir));
+            DownloadAllCommand = new Command(() =>
+               {
+                   foreach (var item in FilesAndFolders)
+                   {
+                       if (!item.IsDir)
+                       {
+                           filesToDownload.Add(item);
+                       }
+                   }
+                   DownloadSelectedFiles();
+               }, () => FilesAndFolders.Any(item => !item.IsDir));
 
             NavigateToClientFolderCommand = new Command(NavigateToSelectedClientFolder, () => SelectedDownloadFolder != null);
             NavigateToSelectedClientFolder();
+
+            ClearCommand = new Command(ClearDownloads, () => Downloads.Count() > 0);
         }
 
-        public bool IsDisconnected => client == null;
+        private bool isDisconnected = true;
+        public bool IsDisconnected
+        {
+            get => isDisconnected;
+            set
+            {
+                isDisconnected = value;
+                OnPropertyChanged(nameof(IsDisconnected));
+            }
+        }
 
         private string ip = defaultIp;
         public string Ip
@@ -70,7 +80,7 @@ namespace Gui
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        private void OnPropertyChanged(string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -82,6 +92,7 @@ namespace Gui
             try
             {
                 client = new Client(ip, port);
+                IsDisconnected = false;
                 await NavigateToSelectedServerFolder();
             }
             catch (SocketException e)
@@ -96,6 +107,7 @@ namespace Gui
             FilesAndFolders.Clear();
             client?.Dispose();
             client = null;
+            IsDisconnected = true;
         }
 
         private FileSystemEntry selectedServerItem;
@@ -124,7 +136,7 @@ namespace Gui
                 FilesAndFolders.Clear();
                 if (selectedFolder != rootFolder)
                 {
-                    ClientFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
+                    FilesAndFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
                 }
 
                 foreach (var item in entries)
@@ -132,7 +144,7 @@ namespace Gui
                     FilesAndFolders.Add(item);
                 }
             }
-            catch (IOException e)
+            catch (IOException e) when (e.InnerException is SocketException)
             {
                 HandleConnectionError(e.Message);
             }
@@ -188,32 +200,53 @@ namespace Gui
             CurrentDownloadFolder = selectedFolder;
         }
 
-        public ObservableCollection<(string, int)> Downloads { get; } = new ObservableCollection<(string, int)>();
+        public ObservableCollection<DownloadFile> Downloads { get; } = new ObservableCollection<DownloadFile>();
+        private readonly List<FileSystemEntry> filesToDownload = new List<FileSystemEntry>();
 
-        private List<string> filesToDownload = new List<string>();
-        public AsyncCommand DownloadCommand { get; }
-        public AsyncCommand DownloadAllCommand { get; }
+        public Command DownloadCommand { get; }
+        public Command DownloadAllCommand { get; }
 
-        private async Task DownloadSelectedFiles()
+        private void DownloadSelectedFiles()
         {
-            //var res=await client.GetAsync(SelectedServerItem.Path);
-        }
-
-        private async Task DownloadFile(FileSystemEntry file, Stream sourceStream, long size)
-        {
-            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{currentDownloadFolder}";
-            using var fileStream = File.Create(@$"{directoryPath}\{file.Name}");
-
-            const int maxBufferSize = 81920;
-            var buffer = new byte[maxBufferSize];
-            while (size > 0)
+            try
             {
-                var currentBufferSize = size > maxBufferSize ? maxBufferSize : (int)size;
-                await sourceStream.ReadAsync(buffer, 0, currentBufferSize);
-                await fileStream.WriteAsync(buffer, 0, currentBufferSize);
-                size -= maxBufferSize;
+                var startIndex = Downloads.Count;
+                foreach (var file in filesToDownload)
+                {
+                    Downloads.Add(new DownloadFile(file));
+                }
+                var count = filesToDownload.Count;
+                filesToDownload.Clear();
+                Parallel.For(startIndex, count, async (i) =>
+                {
+                    var file = Downloads[i];
+                    using var clientToDownload = new Client(Ip, Port);
+                    var index = i;
+                    Action<double> updatePercentage = p =>
+                    {
+                        if (index < Downloads.Count)
+                        {
+                            Downloads[index].Percentage = (int)p;
+                        }
+                    };
+                    await clientToDownload.GetAsync(file.FileInfo.Path, currentDownloadFolder,
+                         file.FileInfo.Name, updatePercentage);
+                });
+            }
+            catch (IOException e)
+            {
+                if (e.InnerException is SocketException)
+                {
+                    HandleConnectionError(e.Message);
+                    return;
+                }
+                MessageBox.Show(e.Message);
             }
         }
+
+        public Command ClearCommand { get; }
+
+        private void ClearDownloads() => Downloads.Clear();
 
         public void Dispose() => client?.Dispose();
     }

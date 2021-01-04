@@ -8,7 +8,6 @@ namespace Gui.Commands
     {
         private readonly Func<Task> execute;
         private readonly Func<bool> canExecute;
-        private bool isExecuting;
 
         public AsyncCommand(Func<Task> executeAsync, Func<bool> canExecute)
         {
@@ -22,24 +21,13 @@ namespace Gui.Commands
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public bool CanExecute(object parameter = null) => !isExecuting && canExecute();
+        public bool CanExecute(object parameter = null) => canExecute();
 
         public async void Execute(object parameter = null) => await ExecuteAsync();
 
         public async Task ExecuteAsync()
         {
-            if (isExecuting)
-                return;
-
-            try
-            {
-                isExecuting = true;
-                await execute();
-            }
-            finally
-            {
-                isExecuting = false;
-            }
+            await execute();
         }
     }
 }

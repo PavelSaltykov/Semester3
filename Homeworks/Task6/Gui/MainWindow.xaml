@@ -35,6 +35,7 @@
             <RowDefinition Height="0.25*"/>
         </Grid.RowDefinitions>
 
+         <!--Connection panel-->
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.45*"/>
@@ -46,9 +47,9 @@
                 <ColumnDefinition Width="0.2*"/>
             </Grid.ColumnDefinitions>
 
-            <Label Content="IP address:"/>
+            <Label Grid.Column="0" Content="IP address:"/>
             <TextBox x:Name="ipTextBox" Grid.Column="1" Margin="1"
-                     IsEnabled="{Binding IsDisconnected}">
+                     IsEnabled="{Binding IsDisconnected, Mode=OneWay}">
                 <TextBox.Text>
                     <Binding Path="Ip" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
@@ -59,7 +60,7 @@
             </TextBox>
             <Label Grid.Column="2" Content="port:"/>
             <TextBox x:Name="portTextBox" Grid.Column="3" Margin="1"
-                     IsEnabled="{Binding IsDisconnected}">
+                     IsEnabled="{Binding IsDisconnected, Mode=OneWay}">
                 <TextBox.Text>
                     <Binding Path="Port" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
@@ -92,7 +93,8 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <Grid>
+            <!--Server files list-->
+            <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.12*"/>
                     <RowDefinition/>
@@ -106,7 +108,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="0.3*"/>
                     </Grid.ColumnDefinitions>
-                    
+
                     <Button Grid.Column="1" Content="Download" Command="{Binding DownloadCommand}"/>
                     <Button Grid.Column="3" Content="Download all" Command="{Binding DownloadAllCommand}"/>
                 </Grid>
@@ -128,6 +130,7 @@
                 </ListBox>
             </Grid>
 
+            <!--Client folders list-->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.12*"/>
@@ -159,5 +162,31 @@
                 </ListBox>
             </Grid>
         </Grid>
+         
+         <!--List of downloads-->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.15*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="1" Margin="10" Content="Clear" Command="{Binding ClearCommand}"/>
+
+            <ListBox ItemsSource="{Binding Downloads}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding FileInfo.Name, Mode=OneWay}" FontSize="15"/>
+                            <TextBlock Text="{Binding Percentage, StringFormat={}{0}%, Mode=OneWay}" FontSize="12"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid> 
     </Grid>
 </Window>
