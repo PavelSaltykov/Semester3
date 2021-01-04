@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Gui"
+        xmlns:vr="clr-namespace:Gui.ValidationRules"
         mc:Ignorable="d"
         Title="FtpClient" Height="450" Width="800" MinHeight="450" MinWidth="800">
     
@@ -13,7 +14,7 @@
 
     <Window.Resources>
         <Style TargetType="Button">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="White"/>
             <Setter Property="FontSize" Value="15"/>
         </Style>
         <Style TargetType="Label">
@@ -46,12 +47,43 @@
             </Grid.ColumnDefinitions>
 
             <Label Content="IP address:"/>
-            <TextBox Grid.Column="1" Text="{Binding Ip}" 
-                     IsEnabled="{Binding ElementName=connectButton, Path=IsEnabled}"/>
+            <TextBox x:Name="ipTextBox" Grid.Column="1" Margin="1"
+                     IsEnabled="{Binding IsDisconnected}">
+                <TextBox.Text>
+                    <Binding Path="Ip" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <vr:IpValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
             <Label Grid.Column="2" Content="port:"/>
-            <TextBox Grid.Column="3" Text="{Binding Port}" 
-                     IsEnabled="{Binding ElementName=connectButton, Path=IsEnabled}"/>
-            <Button x:Name="connectButton" Grid.Column="5" Content="Connect" Command="{Binding ConnectCommand}"/>
+            <TextBox x:Name="portTextBox" Grid.Column="3" Margin="1"
+                     IsEnabled="{Binding IsDisconnected}">
+                <TextBox.Text>
+                    <Binding Path="Port" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <vr:PortValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button Grid.Column="5" Content="Connect" Command="{Binding ConnectCommand}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="IsEnabled" Value="False"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=ipTextBox, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=portTextBox, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
 
         <Grid Grid.Row="1">
@@ -103,13 +135,11 @@
                 </Grid.RowDefinitions>
 
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.6*"/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="Current download folder:" FontSize="12"/>
-                    <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="12"
-                               Text="{Binding Path=CurrentDownloadFolder, Mode=OneWay}"/>
+                    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <TextBlock VerticalAlignment="Center" FontSize="12"
+                                Text="{Binding CurrentDownloadFolder, StringFormat=Current download folder: {0}, Mode=OneWay}"/>
+                    </ScrollViewer>
                 </Grid>
 
                 <ListBox Grid.Row="1" ItemsSource="{Binding ClientFolders}" HorizontalContentAlignment="Stretch"

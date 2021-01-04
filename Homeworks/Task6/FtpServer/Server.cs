@@ -15,7 +15,6 @@ namespace FtpServer
     public class Server
     {
         private readonly TcpListener listener;
-        public string RootDirectory => @$"{Directory.GetCurrentDirectory()}\Root";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Server"/> class
@@ -25,7 +24,6 @@ namespace FtpServer
         /// <param name="port">The port on which to listen for incoming connection attempts.</param>
         public Server(IPAddress localAddr, int port)
         {
-            Directory.CreateDirectory(RootDirectory);
             listener = new TcpListener(localAddr, port);
             listener.Start();
         }
@@ -60,7 +58,7 @@ namespace FtpServer
                         continue;
                     }
 
-                    var path = @$"{RootDirectory}\{request[2..]}\";
+                    var path = request[2..];
                     switch (request[0])
                     {
                         case '1':
@@ -93,12 +91,12 @@ namespace FtpServer
 
             foreach (var directory in directories)
             {
-                var dirPath = directory.Remove(0, directory.IndexOf(@".\"));
+                var dirPath = directory.Remove(0, directory.IndexOf(path));
                 response += $" {dirPath} true";
             }
             foreach (var file in files)
             {
-                var filePath = file.Remove(0, file.IndexOf(@".\"));
+                var filePath = file.Remove(0, file.IndexOf(path));
                 response += $" {filePath} false";
             }
             await writer.WriteLineAsync(response);

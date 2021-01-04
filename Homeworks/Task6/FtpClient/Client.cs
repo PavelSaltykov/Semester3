@@ -56,7 +56,7 @@ namespace FtpClient
             {
                 var entryPath = splittedResponse[i * 2 + 1];
                 var isDir = bool.Parse(splittedResponse[i * 2 + 2]);
-                var name = entryPath.Split('\\').LastOrDefault();
+                var name = entryPath.Split('\\', '/').LastOrDefault();
                 result.Add(new FileSystemEntry(name, entryPath, isDir));
             }
             return result;

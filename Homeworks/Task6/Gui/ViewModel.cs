@@ -17,14 +17,11 @@ namespace Gui
     {
         private const string defaultIp = "127.0.0.1";
         private const int defaultPort = 8888;
-
         private Client client;
-        private string ip = defaultIp;
-        private int port = defaultPort;
 
         public ViewModel()
         {
-            ConnectCommand = new AsyncCommand(Connect, () => client == null);
+            ConnectCommand = new AsyncCommand(Connect, () => IsDisconnected);
             NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, () => SelectedServerItem.IsDir);
             DownloadCommand = new AsyncCommand(async () =>
                 {
@@ -44,13 +41,13 @@ namespace Gui
                     await DownloadSelectedFiles();
                 }, () => FilesAndFolders.Any(item => !item.IsDir));
 
-            Directory.CreateDirectory(@".\Downloads");
-            Directory.CreateDirectory(@".\Downloads\Folder");
-
             NavigateToClientFolderCommand = new Command(NavigateToSelectedClientFolder, () => SelectedDownloadFolder != null);
             NavigateToSelectedClientFolder();
         }
 
+        public bool IsDisconnected => client == null;
+
+        private string ip = defaultIp;
         public string Ip
         {
             get => ip;
@@ -61,12 +58,13 @@ namespace Gui
             }
         }
 
-        public string Port
+        private int port = defaultPort;
+        public int Port
         {
-            get => port.ToString();
+            get => port;
             set
             {
-                port = int.Parse(value);
+                port = value;
                 OnPropertyChanged(nameof(Port));
             }
         }
@@ -126,9 +124,7 @@ namespace Gui
                 FilesAndFolders.Clear();
                 if (selectedFolder != rootFolder)
                 {
-                    var index = selectedFolder.LastIndexOf('\\');
-                    var parentFolder = index > 0 ? selectedFolder.Remove(index) : rootFolder;
-                    FilesAndFolders.Add(new FileSystemEntry("..", parentFolder, true));
+                    ClientFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
                 }
 
                 foreach (var item in entries)
@@ -142,31 +138,10 @@ namespace Gui
             }
         }
 
-        public ObservableCollection<(string, int)> Downloads { get; } = new ObservableCollection<(string, int)>();
-
-        private List<string> filesToDownload = new List<string>();
-        public AsyncCommand DownloadCommand { get; }
-        public AsyncCommand DownloadAllCommand { get; }
-
-        private async Task DownloadSelectedFiles()
+        private static string GetParentFolder(string path)
         {
-            //var res=await client.GetAsync(SelectedServerItem.Path);
-        }
-
-        private async Task DownloadFile(FileSystemEntry file, Stream sourceStream, long size)
-        {
-            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{currentDownloadFolder}";
-            using var fileStream = File.Create(@$"{directoryPath}\{file.Name}");
-
-            const int maxBufferSize = 81920;
-            var buffer = new byte[maxBufferSize];
-            while (size > 0)
-            {
-                var currentBufferSize = size > maxBufferSize ? maxBufferSize : (int)size;
-                await sourceStream.ReadAsync(buffer, 0, currentBufferSize);
-                await fileStream.WriteAsync(buffer, 0, currentBufferSize);
-                size -= maxBufferSize;
-            }
+            var index = path.LastIndexOfAny(new[] { '\\', '/' });
+            return path.Remove(index);
         }
 
         private string currentDownloadFolder;
@@ -202,17 +177,42 @@ namespace Gui
             ClientFolders.Clear();
             if (selectedFolder != rootFolder)
             {
-                var index = selectedFolder.LastIndexOf('\\');
-                var parentFolder = index > 0 ? selectedFolder.Remove(index) : rootFolder;
-                ClientFolders.Add(new FileSystemEntry("..", parentFolder, true));
+                ClientFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
             }
 
             foreach (var item in folders)
             {
-                var name = item.Split('\\').LastOrDefault();
+                var name = item.Split('\\', '/').LastOrDefault();
                 ClientFolders.Add(new FileSystemEntry(name, item, true));
             }
             CurrentDownloadFolder = selectedFolder;
+        }
+
+        public ObservableCollection<(string, int)> Downloads { get; } = new ObservableCollection<(string, int)>();
+
+        private List<string> filesToDownload = new List<string>();
+        public AsyncCommand DownloadCommand { get; }
+        public AsyncCommand DownloadAllCommand { get; }
+
+        private async Task DownloadSelectedFiles()
+        {
+            //var res=await client.GetAsync(SelectedServerItem.Path);
+        }
+
+        private async Task DownloadFile(FileSystemEntry file, Stream sourceStream, long size)
+        {
+            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{currentDownloadFolder}";
+            using var fileStream = File.Create(@$"{directoryPath}\{file.Name}");
+
+            const int maxBufferSize = 81920;
+            var buffer = new byte[maxBufferSize];
+            while (size > 0)
+            {
+                var currentBufferSize = size > maxBufferSize ? maxBufferSize : (int)size;
+                await sourceStream.ReadAsync(buffer, 0, currentBufferSize);
+                await fileStream.WriteAsync(buffer, 0, currentBufferSize);
+                size -= maxBufferSize;
+            }
         }
 
         public void Dispose() => client?.Dispose();
