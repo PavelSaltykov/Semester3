@@ -22,13 +22,13 @@ namespace Gui
         {
             ConnectCommand = new AsyncCommand(Connect, () => IsDisconnected);
             NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, () => SelectedServerItem.IsDir);
-            DownloadCommand = new Command(() =>
+            DownloadCommand = new AsyncCommand(async () =>
                {
                    filesToDownload.Add(SelectedServerItem);
-                   DownloadSelectedFiles();
+                   await DownloadSelectedFiles();
                }, () => SelectedServerItem != null && !SelectedServerItem.IsDir);
 
-            DownloadAllCommand = new Command(() =>
+            DownloadAllCommand = new AsyncCommand(async () =>
                {
                    foreach (var item in FilesAndFolders)
                    {
@@ -37,7 +37,7 @@ namespace Gui
                            filesToDownload.Add(item);
                        }
                    }
-                   DownloadSelectedFiles();
+                   await DownloadSelectedFiles();
                }, () => FilesAndFolders.Any(item => !item.IsDir));
 
             NavigateToClientFolderCommand = new Command(NavigateToSelectedClientFolder, () => SelectedDownloadFolder != null);
@@ -103,11 +103,11 @@ namespace Gui
 
         private void HandleConnectionError(string message)
         {
-            MessageBox.Show(message);
-            FilesAndFolders.Clear();
             client?.Dispose();
             client = null;
             IsDisconnected = true;
+            MessageBox.Show(message);
+            FilesAndFolders.Clear();
         }
 
         private FileSystemEntry selectedServerItem;
@@ -203,43 +203,65 @@ namespace Gui
         public ObservableCollection<DownloadFile> Downloads { get; } = new ObservableCollection<DownloadFile>();
         private readonly List<FileSystemEntry> filesToDownload = new List<FileSystemEntry>();
 
-        public Command DownloadCommand { get; }
-        public Command DownloadAllCommand { get; }
+        public AsyncCommand DownloadCommand { get; }
+        public AsyncCommand DownloadAllCommand { get; }
 
-        private void DownloadSelectedFiles()
+        private async Task DownloadSelectedFiles()
+        {
+            var startIndex = Downloads.Count;
+            foreach (var file in filesToDownload)
+            {
+                Downloads.Add(new DownloadFile(file));
+            }
+            var count = filesToDownload.Count;
+            filesToDownload.Clear();
+            await ParallelDownload(startIndex, count);
+        }
+
+        private readonly object lockObject = new object();
+
+        private async Task ParallelDownload(int startIndex, int count)
         {
             try
             {
-                var startIndex = Downloads.Count;
-                foreach (var file in filesToDownload)
+                var tasks = new List<Task>();
+                for (var i = startIndex; i < startIndex + count; ++i)
                 {
-                    Downloads.Add(new DownloadFile(file));
-                }
-                var count = filesToDownload.Count;
-                filesToDownload.Clear();
-                Parallel.For(startIndex, count, async (i) =>
-                {
-                    var file = Downloads[i];
-                    using var clientToDownload = new Client(Ip, Port);
                     var index = i;
-                    Action<double> updatePercentage = p =>
-                    {
-                        if (index < Downloads.Count)
-                        {
-                            Downloads[index].Percentage = (int)p;
-                        }
-                    };
-                    await clientToDownload.GetAsync(file.FileInfo.Path, currentDownloadFolder,
-                         file.FileInfo.Name, updatePercentage);
-                });
+                    tasks.Add(Task.Run(async () => await DownloadFile(index)));
+                }
+                await Task.WhenAll(tasks);
             }
             catch (IOException e)
             {
-                if (e.InnerException is SocketException)
+                lock (lockObject)
                 {
-                    HandleConnectionError(e.Message);
-                    return;
+                    if (!isDisconnected)
+                    {
+                        HandleConnectionError(e.InnerException.Message);
+                    }
                 }
+            }
+        }
+
+        private async Task DownloadFile(int index)
+        {
+            var file = Downloads[index];
+            using var clientToDownload = new Client(Ip, Port);
+            Action<double> updatePercentage = p =>
+            {
+                if (index < Downloads.Count && ReferenceEquals(file, Downloads[index]))
+                {
+                    Downloads[index].Percentage = (int)p;
+                }
+            };
+            try
+            {
+                await clientToDownload.GetAsync(file.FileInfo.Path, currentDownloadFolder,
+                     file.FileInfo.Name, updatePercentage);
+            }
+            catch (IOException e) when (!(e.InnerException is SocketException))
+            {
                 MessageBox.Show(e.Message);
             }
         }

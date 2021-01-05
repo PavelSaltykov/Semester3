@@ -25,9 +25,6 @@ namespace Gui.Commands
 
         public async void Execute(object parameter = null) => await ExecuteAsync();
 
-        public async Task ExecuteAsync()
-        {
-            await execute();
-        }
+        public async Task ExecuteAsync() => await execute();
     }
 }

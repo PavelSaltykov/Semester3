@@ -69,7 +69,7 @@ namespace FtpClient
         /// <param name="path">Path to file relative to where the server is running.</param>
         /// <param name="destinationPath">Path to download folder relative to where the client is running.</param>
         /// <param name="filename">Name of downloaded file.</param>
-        public async Task GetAsync(string path, string destinationPath,string filename, Action<double> updatePercentage = null)
+        public async Task GetAsync(string path, string destinationPath, string filename, Action<double> updatePercentage = null)
         {
             await writer.WriteLineAsync($"2 {path}");
 
@@ -111,6 +111,7 @@ namespace FtpClient
                 needToDownload -= maxBufferSize;
             }
             updatePercentage?.Invoke(100);
+            await reader.ReadLineAsync();
         }
 
         public void Dispose()
