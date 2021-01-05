@@ -93,7 +93,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!--Server files list-->
+            <!--List of server files and folders-->
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.12*"/>
@@ -130,7 +130,7 @@
                 </ListBox>
             </Grid>
 
-            <!--Client folders list-->
+            <!--List of client folders-->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.12*"/>
@@ -146,7 +146,7 @@
                 </Grid>
 
                 <ListBox Grid.Row="1" ItemsSource="{Binding ClientFolders}" HorizontalContentAlignment="Stretch"
-                         SelectedItem="{Binding SelectedDownloadFolder, Mode=OneWayToSource}">
+                         SelectedItem="{Binding SelectedClientFolder, Mode=OneWayToSource}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid>

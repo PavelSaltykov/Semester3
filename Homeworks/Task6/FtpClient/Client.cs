@@ -69,6 +69,7 @@ namespace FtpClient
         /// <param name="path">Path to file relative to where the server is running.</param>
         /// <param name="destinationPath">Path to download folder relative to where the client is running.</param>
         /// <param name="filename">Name of downloaded file.</param>
+        /// <param name="updatePercentage">Action to update percentage.</param>
         public async Task GetAsync(string path, string destinationPath, string filename, Action<double> updatePercentage = null)
         {
             await writer.WriteLineAsync($"2 {path}");
@@ -90,8 +91,8 @@ namespace FtpClient
 
         private async Task Download(long size, string path, string filename, Action<double> updatePercentage)
         {
-            string directoryPath = $@"{Directory.GetCurrentDirectory()}\{path}";
-            using var fileStream = File.Create(@$"{directoryPath}\{filename}");
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+            using var fileStream = File.Create(Path.Combine(directoryPath, filename));
 
             const int maxBufferSize = 81920;
             var buffer = new byte[maxBufferSize];

@@ -4,6 +4,9 @@ using System.Windows.Controls;
 
 namespace Gui.ValidationRules
 {
+    /// <summary>
+    /// Represents a validation rule for a port.
+    /// </summary>
     public class PortValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)

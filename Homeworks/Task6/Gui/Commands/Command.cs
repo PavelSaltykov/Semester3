@@ -3,12 +3,20 @@ using System.Windows.Input;
 
 namespace Gui.Commands
 {
+    /// <summary>
+    /// Represents a command.
+    /// </summary>
     public class Command : ICommand
     {
         private readonly Action execute;
         private readonly Func<bool> canExecute;
 
-        public Command(Action execute, Func<bool> canExecute=null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Command"/> class.
+        /// </summary>
+        /// <param name="execute">Execution action.</param>
+        /// <param name="canExecute">Func that determines whether the command can execute.</param>
+        public Command(Action execute, Func<bool> canExecute)
         {
             this.execute = execute;
             this.canExecute = canExecute;

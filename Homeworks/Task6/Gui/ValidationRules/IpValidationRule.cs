@@ -4,6 +4,9 @@ using System.Windows.Controls;
 
 namespace Gui.ValidationRules
 {
+    /// <summary>
+    /// Represents a validation rule for an IP address.
+    /// </summary>
     public class IpValidationRule : ValidationRule
     {
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
