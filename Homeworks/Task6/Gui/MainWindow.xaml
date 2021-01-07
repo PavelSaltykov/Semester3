@@ -1,0 +1,192 @@
+﻿<Window x:Class="Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Gui"
+        xmlns:vr="clr-namespace:Gui.ValidationRules"
+        mc:Ignorable="d"
+        Title="FtpClient" Height="450" Width="800" MinHeight="450" MinWidth="800">
+    
+    <Window.DataContext>
+        <local:ViewModel/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.10*"/>
+            <RowDefinition/>
+            <RowDefinition Height="0.25*"/>
+        </Grid.RowDefinitions>
+
+         <!--Connection panel-->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.45*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.25*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.2*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="IP address:"/>
+            <TextBox x:Name="ipTextBox" Grid.Column="1" Margin="1"
+                     IsEnabled="{Binding IsDisconnected, Mode=OneWay}">
+                <TextBox.Text>
+                    <Binding Path="Ip" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <vr:IpValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Label Grid.Column="2" Content="port:"/>
+            <TextBox x:Name="portTextBox" Grid.Column="3" Margin="1"
+                     IsEnabled="{Binding IsDisconnected, Mode=OneWay}">
+                <TextBox.Text>
+                    <Binding Path="Port" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <vr:PortValidationRule/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Button Grid.Column="5" Content="Connect" Command="{Binding ConnectCommand}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="IsEnabled" Value="False"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding ElementName=ipTextBox, Path=(Validation.HasError)}" Value="False" />
+                                    <Condition Binding="{Binding ElementName=portTextBox, Path=(Validation.HasError)}" Value="False" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="IsEnabled" Value="True"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <!--List of server files and folders-->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.12*"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.3*"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="0.3*"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="0.3*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="1" Content="Download" Command="{Binding DownloadCommand}"/>
+                    <Button Grid.Column="3" Content="Download all" Command="{Binding DownloadAllCommand}"/>
+                </Grid>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding ServerFoldersAndFiles}" HorizontalContentAlignment="Stretch"
+                         SelectedItem="{Binding Path=SelectedServerItem, Mode=OneWayToSource}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick"
+                                        Command="{Binding DataContext.NavigateToServerFolderCommand,
+                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                </Grid.InputBindings>
+                                <TextBlock Text="{Binding Name}" FontSize="18"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+
+            <!--List of client folders-->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.12*"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Grid>
+                    <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden"
+                                  VerticalScrollBarVisibility="Disabled">
+                        <TextBlock VerticalAlignment="Center" FontSize="12"
+                                Text="{Binding CurrentDownloadFolder, StringFormat=Current download folder: {0}, Mode=OneWay}"/>
+                    </ScrollViewer>
+                </Grid>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding ClientFolders}" HorizontalContentAlignment="Stretch"
+                         SelectedItem="{Binding SelectedClientFolder, Mode=OneWayToSource}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.InputBindings>
+                                    <MouseBinding MouseAction="LeftDoubleClick"
+                                        Command="{Binding DataContext.NavigateToClientFolderCommand,
+                                            RelativeSource={RelativeSource AncestorType={x:Type Window}}}"/>
+                                </Grid.InputBindings>
+                                <TextBlock Text="{Binding Name}" FontSize="18"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+         
+         <!--List of downloads-->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.15*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="1" Margin="10" Content="Clear" Command="{Binding ClearCommand}"/>
+
+            <ListBox ItemsSource="{Binding Downloads}">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding FileInfo.Name, Mode=OneWay}" FontSize="15"/>
+                            <TextBlock Text="{Binding Percentage, StringFormat={}{0}%, Mode=OneWay}" FontSize="12"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid> 
+    </Grid>
+</Window>
