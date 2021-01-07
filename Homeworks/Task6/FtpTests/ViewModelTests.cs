@@ -11,7 +11,7 @@ namespace FtpTests
     {
         private const int port = ServerSettings.Port;
         private ViewModel vm;
-        private readonly string downloadDir = Path.Combine(".", "DownloadsVM");
+        private readonly string downloadDir = Path.Combine(Directory.GetDirectoryRoot("."), "DownloadsVM");
 
         [OneTimeSetUp]
         public void OneTimeSetUp() => Directory.CreateDirectory(downloadDir);
@@ -71,7 +71,7 @@ namespace FtpTests
             Assert.AreEqual(downloadDir, vm.CurrentDownloadFolder);
 
             var expectedList = ClientTests.ExpectedList(downloadDir, false);
-            expectedList.Insert(0, new FileSystemEntry("..", ".", true));
+            expectedList.Insert(0, new FileSystemEntry("..", Directory.GetDirectoryRoot("."), true));
 
             CollectionAssert.AreEquivalent(expectedList, vm.ClientFolders);
         }

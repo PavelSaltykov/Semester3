@@ -1,5 +1,6 @@
 ﻿using FtpClient;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Gui
 {
@@ -30,12 +31,12 @@ namespace Gui
             set
             {
                 percentage = value;
-                OnPropertyChanged(nameof(Percentage));
+                OnPropertyChanged();
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

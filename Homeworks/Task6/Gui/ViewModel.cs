@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -64,7 +66,7 @@ namespace Gui
             set
             {
                 isDisconnected = value;
-                OnPropertyChanged(nameof(IsDisconnected));
+                OnPropertyChanged();
             }
         }
 
@@ -79,7 +81,7 @@ namespace Gui
             set
             {
                 ip = value;
-                OnPropertyChanged(nameof(Ip));
+                OnPropertyChanged();
             }
         }
 
@@ -94,12 +96,12 @@ namespace Gui
             set
             {
                 port = value;
-                OnPropertyChanged(nameof(Port));
+                OnPropertyChanged();
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -132,6 +134,8 @@ namespace Gui
             ServerFoldersAndFiles.Clear();
         }
 
+        private const string serverRoot = ".";
+
         private FileSystemEntry selectedServerItem;
 
         /// <summary>
@@ -139,11 +143,11 @@ namespace Gui
         /// </summary>
         public FileSystemEntry SelectedServerItem
         {
-            get => selectedServerItem;
+            get => selectedServerItem ??= new FileSystemEntry(serverRoot, serverRoot, true);
             set
             {
                 selectedServerItem = value;
-                OnPropertyChanged(nameof(SelectedServerItem));
+                OnPropertyChanged();
             }
         }
 
@@ -151,8 +155,6 @@ namespace Gui
         /// List of server files and folders.
         /// </summary>
         public ObservableCollection<FileSystemEntry> ServerFoldersAndFiles { get; } = new ObservableCollection<FileSystemEntry>();
-
-        private const string rootFolder = ".";
 
         /// <summary>
         /// Command to navigate to the selected server folder.
@@ -163,11 +165,11 @@ namespace Gui
         {
             try
             {
-                string selectedFolder = SelectedServerItem?.Path ?? rootFolder;
+                string selectedFolder = SelectedServerItem.Path;
                 var entries = await client.ListAsync(selectedFolder);
 
                 ServerFoldersAndFiles.Clear();
-                if (selectedFolder != rootFolder)
+                if (selectedFolder != serverRoot)
                 {
                     ServerFoldersAndFiles.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
                 }
@@ -189,6 +191,8 @@ namespace Gui
             return path.Remove(index);
         }
 
+        private readonly string clientRoot = Directory.GetDirectoryRoot(".");
+
         private string currentDownloadFolder;
 
         /// <summary>
@@ -200,7 +204,7 @@ namespace Gui
             private set
             {
                 currentDownloadFolder = value;
-                OnPropertyChanged(nameof(CurrentDownloadFolder));
+                OnPropertyChanged();
             }
         }
 
@@ -211,11 +215,11 @@ namespace Gui
         /// </summary>
         public FileSystemEntry SelectedClientFolder
         {
-            get => selectedClientFolder ??= new FileSystemEntry(rootFolder, rootFolder, true);
+            get => selectedClientFolder ??= new FileSystemEntry(clientRoot, clientRoot, true);
             set
             {
                 selectedClientFolder = value;
-                OnPropertyChanged(nameof(SelectedClientFolder));
+                OnPropertyChanged();
             }
         }
 
@@ -231,20 +235,27 @@ namespace Gui
 
         private void NavigateToSelectedClientFolder()
         {
-            var selectedFolder = SelectedClientFolder.Path;
-            var folders = Directory.EnumerateDirectories(selectedFolder);
-            ClientFolders.Clear();
-            if (selectedFolder != rootFolder)
+            try
             {
-                ClientFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
-            }
+                var selectedFolder = SelectedClientFolder.Path;
+                var folders = Directory.EnumerateDirectories(selectedFolder);
+                ClientFolders.Clear();
+                if (selectedFolder != clientRoot)
+                {
+                    ClientFolders.Add(new FileSystemEntry("..", Directory.GetParent(selectedFolder).FullName, true));
+                }
 
-            foreach (var item in folders)
-            {
-                var name = item.Split('\\', '/').LastOrDefault();
-                ClientFolders.Add(new FileSystemEntry(name, item, true));
+                foreach (var item in folders)
+                {
+                    var name = item.Split('\\', '/').LastOrDefault();
+                    ClientFolders.Add(new FileSystemEntry(name, item, true));
+                }
+                CurrentDownloadFolder = selectedFolder;
             }
-            CurrentDownloadFolder = selectedFolder;
+            catch (Exception e) when (e is UnauthorizedAccessException || e is SecurityException)
+            {
+                MessageBox.Show(e.Message);
+            }
         }
 
         /// <summary>
