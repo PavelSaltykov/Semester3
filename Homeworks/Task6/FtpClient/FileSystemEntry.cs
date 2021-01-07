@@ -32,5 +32,16 @@
         /// Gets a value that indicates whether this entry is a directory.
         /// </summary>
         public bool IsDir { get; }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is FileSystemEntry))
+                return false;
+
+            var other = obj as FileSystemEntry;
+            return Name == other.Name && Path == other.Path && IsDir == other.IsDir;
+        }
+
+        public override int GetHashCode() => (Name, Path, IsDir).GetHashCode();
     }
 }

@@ -40,7 +40,7 @@ namespace Gui
 
             DownloadAllCommand = new AsyncCommand(async () =>
                {
-                   foreach (var item in FilesAndFolders)
+                   foreach (var item in ServerFoldersAndFiles)
                    {
                        if (!item.IsDir)
                        {
@@ -48,7 +48,7 @@ namespace Gui
                        }
                    }
                    await DownloadSelectedFiles();
-               }, () => FilesAndFolders.Any(item => !item.IsDir));
+               }, () => ServerFoldersAndFiles.Any(item => !item.IsDir));
 
             ClearCommand = new Command(ClearDownloads, () => Downloads.Count() > 0);
         }
@@ -129,7 +129,7 @@ namespace Gui
             client = null;
             IsDisconnected = true;
             MessageBox.Show(message);
-            FilesAndFolders.Clear();
+            ServerFoldersAndFiles.Clear();
         }
 
         private FileSystemEntry selectedServerItem;
@@ -150,7 +150,7 @@ namespace Gui
         /// <summary>
         /// List of server files and folders.
         /// </summary>
-        public ObservableCollection<FileSystemEntry> FilesAndFolders { get; } = new ObservableCollection<FileSystemEntry>();
+        public ObservableCollection<FileSystemEntry> ServerFoldersAndFiles { get; } = new ObservableCollection<FileSystemEntry>();
 
         private const string rootFolder = ".";
 
@@ -166,15 +166,15 @@ namespace Gui
                 string selectedFolder = SelectedServerItem?.Path ?? rootFolder;
                 var entries = await client.ListAsync(selectedFolder);
 
-                FilesAndFolders.Clear();
+                ServerFoldersAndFiles.Clear();
                 if (selectedFolder != rootFolder)
                 {
-                    FilesAndFolders.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
+                    ServerFoldersAndFiles.Add(new FileSystemEntry("..", GetParentFolder(selectedFolder), true));
                 }
 
                 foreach (var item in entries)
                 {
-                    FilesAndFolders.Add(item);
+                    ServerFoldersAndFiles.Add(item);
                 }
             }
             catch (IOException e) when (e.InnerException is SocketException)
@@ -197,7 +197,7 @@ namespace Gui
         public string CurrentDownloadFolder
         {
             get => currentDownloadFolder;
-            set
+            private set
             {
                 currentDownloadFolder = value;
                 OnPropertyChanged(nameof(CurrentDownloadFolder));

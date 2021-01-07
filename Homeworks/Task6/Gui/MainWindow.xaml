@@ -113,7 +113,7 @@
                     <Button Grid.Column="3" Content="Download all" Command="{Binding DownloadAllCommand}"/>
                 </Grid>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding FilesAndFolders}" HorizontalContentAlignment="Stretch"
+                <ListBox Grid.Row="1" ItemsSource="{Binding ServerFoldersAndFiles}" HorizontalContentAlignment="Stretch"
                          SelectedItem="{Binding Path=SelectedServerItem, Mode=OneWayToSource}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>

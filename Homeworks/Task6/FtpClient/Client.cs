@@ -92,6 +92,7 @@ namespace FtpClient
         private async Task Download(long size, string path, string filename, Action<double> updatePercentage)
         {
             string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), path);
+            Directory.CreateDirectory(directoryPath);
             using var fileStream = File.Create(Path.Combine(directoryPath, filename));
 
             const int maxBufferSize = 81920;
