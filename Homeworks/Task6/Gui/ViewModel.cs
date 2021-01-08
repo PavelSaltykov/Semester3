@@ -30,7 +30,7 @@ namespace Gui
         {
             ConnectCommand = new AsyncCommand(Connect, () => IsDisconnected);
 
-            NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, 
+            NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder,
                 () => SelectedServerItem != null && SelectedServerItem.IsDir);
             NavigateToClientFolderCommand = new Command(NavigateToSelectedClientFolder, () => SelectedClientFolder != null);
             NavigateToSelectedClientFolder();
@@ -116,8 +116,8 @@ namespace Gui
         {
             try
             {
-                client = new Client(ip, port);
                 IsDisconnected = false;
+                await Task.Run(() => client = new Client(ip, port));
                 await NavigateToSelectedServerFolder();
             }
             catch (SocketException e)
