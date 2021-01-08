@@ -30,7 +30,8 @@ namespace Gui
         {
             ConnectCommand = new AsyncCommand(Connect, () => IsDisconnected);
 
-            NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, () => SelectedServerItem.IsDir);
+            NavigateToServerFolderCommand = new AsyncCommand(NavigateToSelectedServerFolder, 
+                () => SelectedServerItem != null && SelectedServerItem.IsDir);
             NavigateToClientFolderCommand = new Command(NavigateToSelectedClientFolder, () => SelectedClientFolder != null);
             NavigateToSelectedClientFolder();
 
@@ -143,7 +144,7 @@ namespace Gui
         /// </summary>
         public FileSystemEntry SelectedServerItem
         {
-            get => selectedServerItem ??= new FileSystemEntry(serverRoot, serverRoot, true);
+            get => selectedServerItem;
             set
             {
                 selectedServerItem = value;
@@ -165,7 +166,7 @@ namespace Gui
         {
             try
             {
-                string selectedFolder = SelectedServerItem.Path;
+                string selectedFolder = SelectedServerItem?.Path ?? serverRoot;
                 var entries = await client.ListAsync(selectedFolder);
 
                 ServerFoldersAndFiles.Clear();
@@ -215,7 +216,7 @@ namespace Gui
         /// </summary>
         public FileSystemEntry SelectedClientFolder
         {
-            get => selectedClientFolder ??= new FileSystemEntry(clientRoot, clientRoot, true);
+            get => selectedClientFolder;
             set
             {
                 selectedClientFolder = value;
@@ -237,7 +238,7 @@ namespace Gui
         {
             try
             {
-                var selectedFolder = SelectedClientFolder.Path;
+                var selectedFolder = SelectedClientFolder?.Path ?? clientRoot;
                 var folders = Directory.EnumerateDirectories(selectedFolder);
                 ClientFolders.Clear();
                 if (selectedFolder != clientRoot)
