@@ -34,7 +34,11 @@ namespace MyNUnit
                 throw new AssembliesNotFoundException($"Assemblies not found in path: {path}.");
 
             var assemblies = new ConcurrentQueue<Assembly>();
-            Parallel.ForEach(assemblyFiles, x => assemblies.Enqueue(Assembly.LoadFrom(x)));
+            Parallel.ForEach(assemblyFiles, file => 
+            {
+                var assemblyBytes = File.ReadAllBytes(file);
+                assemblies.Enqueue(Assembly.Load(assemblyBytes));
+            });
 
             var classes = assemblies.Distinct()
                 .SelectMany(a => a.ExportedTypes)

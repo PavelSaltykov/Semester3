@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MyNUnit;
 using MyNUnitWeb.Models;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Task7.Models;
 
@@ -27,13 +29,12 @@ namespace Task7.Controllers
             return View(ivm);
         }
 
-        [HttpPost]
         public IActionResult Clear()
         {
-            var files = Directory.GetFiles(PathToAssemblies);
+            var files = new DirectoryInfo(PathToAssemblies).GetFiles();
             foreach (var file in files)
             {
-                System.IO.File.Delete(file);
+                file.Delete();
             }
             var ivm = new IndexViewModel(PathToAssemblies);
             return RedirectToAction("Index", ivm);
@@ -49,6 +50,18 @@ namespace Task7.Controllers
                 await file.CopyToAsync(fileStream);
             }
             var ivm = new IndexViewModel(PathToAssemblies);
+            return RedirectToAction("Index", ivm);
+        }
+
+        [HttpPost]
+        public IActionResult RunTests()
+        {
+            var ivm = new IndexViewModel(PathToAssemblies);
+            if (!ivm.LoadedAssemblies.Any())
+                return RedirectToAction("Index", ivm);
+
+            var runner = new TestRunner(PathToAssemblies);
+            runner.Run();
             return RedirectToAction("Index", ivm);
         }
 

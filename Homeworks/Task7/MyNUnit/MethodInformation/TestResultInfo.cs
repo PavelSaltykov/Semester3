@@ -47,7 +47,7 @@ namespace MyNUnit.MethodInformation
 
             info += IsPassed ? "Passed | " : $"FAILED:  {FailedMessage} | ";
 
-            info += $@"{Time:mm\:ss\.fff}";
+            info += Time;
             return info;
         }
 
