@@ -28,3 +28,40 @@
     </form>
 </div>
 
+<div>
+    @foreach (var report in Model.AssemblyReports)
+    {
+        <h4>@report.Name</h4>
+        <p>Passed: @report.NumberOfPassed</p>
+        <p>Failed: @report.NumberOfFailed</p>
+        <p>Ignored: @report.NumberOfIgnored</p>
+
+        <table class="table table-bordered table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Class name</th>
+                    <th scope="col">Test name</th>
+                    <th scope="col">Message</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var test in report.TestReports)
+                {
+                    var color = "";
+                    var status = test.Status;
+                    color = status == TestStatus.Ignored ? "bg-warning" : status == TestStatus.Passed ? "bg-success" : "bg-danger";
+                    <tr class="@color">
+                        <td>@status</td>
+                        <td>@test.ClassName</td>
+                        <td>@test.Name</td>
+                        <td>@test.Message</td>
+                        <td>@(test.Time != null ? @test.Time : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

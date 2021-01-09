@@ -51,18 +51,19 @@ namespace MyNUnit.MethodInformation
             return info;
         }
 
-        private string FailedMessage
+        public string FailedMessage
         {
             get
             {
+                if (IsPassed)
+                    return "";
+
                 if (Expected == null)
-                {
                     return $"Unexpected exception: {Unexpected.GetType().Name} ({Unexpected.Message})";
-                }
+                
                 if (Unexpected == null)
-                {
                     return $"Expected: {Expected.Name}";
-                }
+                
                 return $"Expected: {Expected.Name}, " +
                         $"but was: {Unexpected.GetType().Name} ({Unexpected.Message})";
             }
