@@ -1,0 +1,50 @@
+﻿@using MyNUnitWeb.Models;
+@model IEnumerable<AssemblyReport>;
+@{
+    ViewData["Title"] = "History";
+}
+
+<h1 class="text-center display-2">
+    History
+</h1>
+<div>
+@foreach (var assembly in Model)
+{
+    <div class="mb-5">
+        <h3>@assembly.Name</h3>
+        <ul class="list-inline">
+            <li class="list-inline-item">Passed: @assembly.NumberOfPassed</li>
+            <li class="list-inline-item">Failed: @assembly.NumberOfFailed</li>
+            <li class="list-inline-item">Ignored: @assembly.NumberOfIgnored</li>
+        </ul>
+
+        <table class="table table-bordered table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Class name</th>
+                    <th scope="col">Test name</th>
+                    <th scope="col">Message</th>
+                    <th scope="col">Time</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var test in assembly.TestReports)
+                {
+                    var color = "";
+                    var status = test.Status;
+                    color = status == TestStatus.Ignored ? "bg-warning" : status == TestStatus.Passed ? "bg-success" : "bg-danger";
+                    <tr class="@color">
+                        <td>@status</td>
+                        <td>@test.ClassName</td>
+                        <td>@test.Name</td>
+                        <td>@test.Message</td>
+                        <td>@(test.Time != null ? @test.Time : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </div>
+        }
+    </div>
