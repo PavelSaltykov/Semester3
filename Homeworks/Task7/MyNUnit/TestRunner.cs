@@ -34,13 +34,13 @@ namespace MyNUnit
                 throw new AssembliesNotFoundException($"Assemblies not found in path: {path}.");
 
             var assemblies = new ConcurrentQueue<Assembly>();
-            Parallel.ForEach(assemblyFiles, file => 
+            Parallel.ForEach(assemblyFiles, file =>
             {
                 var assemblyBytes = File.ReadAllBytes(file);
                 assemblies.Enqueue(Assembly.Load(assemblyBytes));
             });
 
-            var classes = assemblies.Distinct()
+            var classes = assemblies.GroupBy(a => a.FullName).Select(g => g.First())
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => t.IsClass);
 
