@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Task7
+namespace MyNUnitWeb
 {
     public class Program
     {

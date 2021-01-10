@@ -1,4 +1,4 @@
-namespace Task7.Models
+namespace MyNUnitWeb.Models
 {
     public class ErrorViewModel
     {

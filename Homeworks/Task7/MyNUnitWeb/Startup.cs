@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MyNUnitWeb.Models;
 
-namespace Task7
+namespace MyNUnitWeb
 {
     public class Startup
     {
@@ -18,6 +20,8 @@ namespace Task7
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<History>(options => options.UseSqlServer(connection));
             services.AddControllersWithViews();
         }
 
